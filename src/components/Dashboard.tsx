@@ -5,13 +5,66 @@ import { AvatarDisplay } from "./dashboard/AvatarDisplay";
 import { SubjectCard } from "./dashboard/SubjectCard";
 import { useGameSounds } from "@/hooks/useGameSounds";
 import { LevelUpModal } from "@/components/juice/LevelUpModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { BadgeGrid } from "./widgets/BadgeGrid";
+
+interface WeakSubject {
+  subject: string;
+  subjectSlug: string;
+  attemptedCount: number;
+  accuracy: number | null;
+  reason: "not-attempted" | "low-accuracy";
+}
+
+interface SubjectOverview {
+  subject: string;
+  subjectSlug: string;
+  progress: number;
+  xpValue: number;
+}
+
+const colorSchemes: Array<"sky" | "teal" | "coral" | "purple"> = ["sky", "teal", "coral", "purple"];
 
 export function Dashboard() {
   const { playClick } = useGameSounds();
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [weakSubjects, setWeakSubjects] = useState<WeakSubject[]>([]);
+  const [subjects, setSubjects] = useState<SubjectOverview[]>([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("levelup_token");
+
+    fetch("/api/analytics/weak-subjects", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as { weakSubjects: WeakSubject[] };
+        setWeakSubjects(data.weakSubjects ?? []);
+      })
+      .catch(() => {
+        setWeakSubjects([]);
+      });
+
+    fetch("/api/subjects/overview", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as { subjects: SubjectOverview[] };
+        setSubjects(data.subjects ?? []);
+      })
+      .catch(() => {
+        setSubjects([]);
+      });
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -76,38 +129,32 @@ export function Dashboard() {
         
         {/* Left Side: Subject Grid (2 columns on large screens) */}
         <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6 order-2 lg:order-1" onClick={playClick}>
-          <motion.div variants={itemVariants} className="w-full">
-            <SubjectCard 
-              title="AP History" 
-              progress={75} 
-              xpValue={450} 
-              colorScheme="sky" 
-            />
-          </motion.div>
-          <motion.div variants={itemVariants} className="w-full">
-            <SubjectCard 
-              title="Biology 101" 
-              progress={40} 
-              xpValue={120} 
-              colorScheme="teal" 
-            />
-          </motion.div>
-          <motion.div variants={itemVariants} className="w-full md:col-span-2">
-            <SubjectCard 
-              title="Advanced Calculus" 
-              progress={15} 
-              xpValue={80} 
-              colorScheme="coral" 
-            />
-          </motion.div>
-          <motion.div variants={itemVariants} className="w-full md:col-span-2">
-            <SubjectCard 
-              title="Literature & Composition" 
-              progress={90} 
-              xpValue={800} 
-              colorScheme="purple" 
-            />
-          </motion.div>
+          {weakSubjects.slice(0, 4).map((weak, index) => {
+            const subject = subjects.find((item) => item.subjectSlug === weak.subjectSlug);
+            const progress = weak.reason === "not-attempted" ? 0 : (weak.accuracy ?? 0);
+
+            return (
+            <motion.div
+              key={weak.subjectSlug}
+              variants={itemVariants}
+              className={`w-full ${index >= 2 ? "md:col-span-2" : ""}`}
+            >
+              <SubjectCard
+                title={weak.subject}
+                progress={progress}
+                xpValue={subject?.xpValue ?? 0}
+                colorScheme={colorSchemes[index % colorSchemes.length]}
+                href={`/arena?subjectSlug=${encodeURIComponent(weak.subjectSlug)}&subject=${encodeURIComponent(weak.subject)}`}
+              />
+            </motion.div>
+            );
+          })}
+
+          {weakSubjects.length === 0 && (
+            <motion.div variants={itemVariants} className="w-full md:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">
+              No weak or unattempted subjects right now.
+            </motion.div>
+          )}
         </div>
 
         {/* Right Side: Central Avatar Display */}
@@ -120,6 +167,26 @@ export function Dashboard() {
           <div className="w-full mt-8 pt-8 border-t border-slate-100">
             <h3 className="font-heading font-bold text-lg text-slate-800 mb-6">Recent Badges</h3>
             <BadgeGrid />
+          </div>
+
+          <div className="w-full mt-8 pt-8 border-t border-slate-100">
+            <h3 className="font-heading font-bold text-lg text-slate-800 mb-4">Weakest Subjects</h3>
+            <div className="space-y-3">
+              {weakSubjects.length === 0 && (
+                <p className="text-sm text-slate-500">No weak subjects yet. Play more quizzes to unlock analytics.</p>
+              )}
+
+              {weakSubjects.map((subject) => (
+                <div key={subject.subjectSlug} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left">
+                  <p className="text-sm font-bold text-slate-800">{subject.subject}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {subject.reason === "not-attempted"
+                      ? "Not attempted yet"
+                      : `Accuracy: ${subject.accuracy ?? 0}% across ${subject.attemptedCount} attempt(s)`}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
 

@@ -2,16 +2,50 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Rocket, BookOpen, Trophy, User } from "lucide-react";
+import { Rocket, BookOpen, Trophy, User, Swords } from "lucide-react";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useEffect, useState } from "react";
+
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+}
 
 export function TopNavBar() {
   const pathname = usePathname();
   const { avatarUrl } = useUserPreferences();
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("levelup_token");
+
+    fetch("/api/auth/me", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setAuthUser(null);
+          return;
+        }
+
+        const data = (await res.json()) as { user: AuthUser };
+        setAuthUser(data.user);
+      })
+      .catch(() => setAuthUser(null));
+  }, [pathname]);
+
+  async function handleLogout(): Promise<void> {
+    await fetch("/api/auth/logout", { method: "POST" });
+    localStorage.removeItem("levelup_token");
+    setAuthUser(null);
+    window.location.href = "/auth";
+  }
 
   const links = [
     { label: "Dashboard", href: "/", icon: <Rocket size={18} /> },
     { label: "Subjects", href: "/subjects", icon: <BookOpen size={18} /> },
+    { label: "Duel", href: "/duel", icon: <Swords size={18} /> },
     { label: "Leaderboard", href: "/leaderboard", icon: <Trophy size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
   ];
@@ -54,18 +88,36 @@ export function TopNavBar() {
 
           {/* Quick Stats / Mini Profile (Desktop) */}
           <div className="hidden md:flex items-center gap-4">
-             <div className="flex flex-col items-end">
-                <span className="text-xs font-bold text-slate-500 uppercase">Lvl. 12</span>
-                <span className="text-sm font-semibold text-primary-teal">1,250 XP</span>
-             </div>
-             <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-50">
-                <img 
-                  src={avatarUrl} 
-                  alt="Profile" 
-                  className="w-full h-full object-contain"
-                  style={{ imageRendering: 'pixelated' }}
-                />
-             </div>
+            {authUser ? (
+              <>
+                <div className="flex flex-col items-end">
+                  <span className="text-xs font-bold text-slate-500 uppercase">{authUser.name}</span>
+                  <span className="text-sm font-semibold text-primary-teal">Signed In</span>
+                </div>
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-50">
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-full h-full object-contain"
+                    style={{ imageRendering: "pixelated" }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth"
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button - Placeholder */}

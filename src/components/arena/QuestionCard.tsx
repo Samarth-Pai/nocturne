@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 export interface Option {
@@ -20,9 +20,10 @@ export interface QuestionData {
 interface QuestionCardProps {
   data: QuestionData;
   onAnswerSelected: (isCorrect: boolean, event: React.MouseEvent) => void;
+  onNext?: () => void;
 }
 
-export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
+export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardProps) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
@@ -37,11 +38,11 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
     onAnswerSelected(correct, e);
   };
 
-  // Reset state when question data changes
-  useState(() => {
+  // Reset local selection when question changes.
+  useEffect(() => {
     setSelectedOptionId(null);
     setIsCorrect(null);
-  });
+  }, [data.id]);
 
   // Alternatively, the parent should use a key. But we'll add a safety reset here too.
   if (selectedOptionId !== null && data.options.every(o => o.id !== selectedOptionId)) {
@@ -150,6 +151,16 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {selectedOptionId !== null && onNext && (
+        <button
+          type="button"
+          onClick={onNext}
+          className="mt-6 w-full rounded-xl bg-slate-800 px-4 py-3 text-white font-bold hover:bg-slate-700 transition-colors"
+        >
+          Next Question
+        </button>
+      )}
       
     </motion.div>
   );

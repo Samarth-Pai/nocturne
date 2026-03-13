@@ -9,6 +9,7 @@ interface SubjectCardProps {
   progress: number;
   xpValue: number;
   colorScheme: "sky" | "teal" | "coral" | "purple";
+  href?: string;
 }
 
 const colorMap = {
@@ -25,7 +26,7 @@ const bgMap = {
   purple: "bg-accent-purple",
 };
 
-export function SubjectCard({ title, progress, xpValue, colorScheme }: SubjectCardProps) {
+export function SubjectCard({ title, progress, xpValue, colorScheme, href = "/arena" }: SubjectCardProps) {
   const styles = colorMap[colorScheme];
   const barColor = bgMap[colorScheme];
 
@@ -54,7 +55,7 @@ export function SubjectCard({ title, progress, xpValue, colorScheme }: SubjectCa
         </div>
 
         <Link
-          href="/arena"
+          href={href}
           className="flex items-center justify-center gap-2 w-full bg-white text-slate-800 font-bold py-3 rounded-xl shadow-sm hover:shadow-md transition-all group-hover:bg-slate-50"
         >
           <Play size={16} className={`text-slate-800 opacity-70`} />

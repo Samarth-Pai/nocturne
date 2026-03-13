@@ -3,14 +3,19 @@
 import { useState } from "react";
 import { Upload, FileText, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
-export function UploadSystem() {
-  const router = useRouter();
+interface UploadSystemProps {
+  onUploaded?: () => void;
+}
+
+export function UploadSystem({ onUploaded }: UploadSystemProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [subject, setSubject] = useState("");
+  const [subjectSlug, setSubjectSlug] = useState("");
   const [textInput, setTextInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<"idle" | "uploading" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -38,20 +43,42 @@ export function UploadSystem() {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file && !textInput) return;
-    
+
     setStatus("uploading");
-    
-    // Simulate API processing time to generate quiz
-    setTimeout(() => {
+    setError(null);
+
+    const token = localStorage.getItem("levelup_token");
+    const formData = new FormData();
+    formData.append("subject", subject || "General");
+    formData.append("subjectSlug", subjectSlug);
+    formData.append("textInput", textInput);
+    if (file) {
+      formData.append("file", file);
+    }
+
+    try {
+      const response = await fetch("/api/subjects/upload", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: formData,
+      });
+
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setStatus("error");
+        setError(data.error ?? "Failed to process upload.");
+        return;
+      }
+
       setStatus("success");
-      
-      // Redirect to quiz arena after success
-      setTimeout(() => {
-        router.push("/arena");
-      }, 1500);
-    }, 2500);
+      onUploaded?.();
+    } catch {
+      setStatus("error");
+      setError("Unable to upload subject material.");
+    }
   };
 
   return (
@@ -89,7 +116,7 @@ export function UploadSystem() {
                 type="file"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 onChange={handleFileChange}
-                accept=".pdf,.txt,.docx"
+                accept=".pdf,.pptx,.txt"
               />
               
               {file ? (
@@ -104,7 +131,7 @@ export function UploadSystem() {
                     <Upload size={28} className="text-primary-sky" />
                   </div>
                   <p className="font-semibold text-lg text-slate-700">Click or drag file to this area</p>
-                  <p className="text-sm mt-1">Supports PDF, TXT, DOCX</p>
+                  <p className="text-sm mt-1">Supports PDF, PPTX, TXT</p>
                 </div>
               )}
             </div>
@@ -117,6 +144,18 @@ export function UploadSystem() {
 
             {/* Text Input */}
             <div className="w-full">
+              <input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Subject Name (e.g. Data Structures)"
+                className="w-full mb-3 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-sky/50 outline-none transition-all text-slate-700 font-medium placeholder:text-slate-400"
+              />
+              <input
+                value={subjectSlug}
+                onChange={(e) => setSubjectSlug(e.target.value)}
+                placeholder="Subject Slug (optional, e.g. data-structures)"
+                className="w-full mb-3 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-sky/50 outline-none transition-all text-slate-700 font-medium placeholder:text-slate-400"
+              />
               <textarea
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
@@ -132,6 +171,10 @@ export function UploadSystem() {
             >
               Generate Quiz
             </button>
+
+            {error && (
+              <p className="text-sm text-rose-600 text-center">{error}</p>
+            )}
           </motion.div>
         )}
 
@@ -165,7 +208,7 @@ export function UploadSystem() {
               <CheckCircle size={80} className="text-primary-teal mb-6" />
             </motion.div>
             <h3 className="font-heading font-bold text-2xl text-slate-800">Quiz Ready!</h3>
-            <p className="text-slate-500 font-medium mt-2">Entering the Arena...</p>
+            <p className="text-slate-500 font-medium mt-2">Questions saved to database for this subject.</p>
           </motion.div>
         )}
       </AnimatePresence>
