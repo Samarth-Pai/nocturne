@@ -5,7 +5,6 @@ import { authCookieName, signAuthToken } from "@/lib/auth";
 import { UserModel } from "@/lib/models";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  try {
     const body = (await request.json()) as {
       email?: string;
       password?: string;
@@ -56,10 +55,4 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     return response;
-  } catch {
-    return NextResponse.json(
-      { error: "Unable to sign in right now. Please try again." },
-      { status: 500 },
-    );
-  }
 }

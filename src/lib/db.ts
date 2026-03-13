@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import dns from "dns";
+
+// Fix for ISP DNS blocking MongoDB SRV lookups
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 declare global {
   var __mongooseConnPromise: Promise<typeof mongoose> | undefined;
