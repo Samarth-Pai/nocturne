@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Rocket, BookOpen, Trophy, User, Swords } from "lucide-react";
+import { Rocket, BookOpen, Trophy, User, Swords, Sparkles } from "lucide-react";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useEffect, useState } from "react";
 
@@ -45,6 +45,7 @@ export function TopNavBar() {
   const links = [
     { label: "Dashboard", href: "/", icon: <Rocket size={18} /> },
     { label: "Subjects", href: "/subjects", icon: <BookOpen size={18} /> },
+    { label: "Story", href: "/story", icon: <Sparkles size={18} /> },
     { label: "Duel", href: "/duel", icon: <Swords size={18} /> },
     { label: "Leaderboard", href: "/leaderboard", icon: <Trophy size={18} /> },
     { label: "Profile", href: "/profile", icon: <User size={18} /> },
@@ -57,7 +58,7 @@ export function TopNavBar() {
           
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-sky to-primary-teal flex items-center justify-center text-white font-bold text-lg shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-sky to-primary-teal flex items-center justify-center text-white font-bold text-lg shadow-md">
               L<span className="text-primary-coral">U</span>
             </div>
             <span className="font-heading font-black text-xl tracking-tight text-foreground">

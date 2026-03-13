@@ -41,6 +41,13 @@ export default function SubjectsPage() {
           </h1>
           <p className="text-slate-500 font-medium mt-1">Upload new materials to generate custom arena challenges.</p>
         </div>
+
+        <Link
+          href="/story"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-primary-sky hover:text-primary-sky"
+        >
+          Open Story Mode
+        </Link>
       </div>
 
       <section className="w-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
