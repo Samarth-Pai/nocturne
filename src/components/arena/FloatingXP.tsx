@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 interface FloatingXPProps {
   startX: number;
   startY: number;
+  label: string;
   onComplete: () => void;
 }
 
-export function FloatingXP({ startX, startY, onComplete }: FloatingXPProps) {
+export function FloatingXP({ startX, startY, label, onComplete }: FloatingXPProps) {
   const [targetPos, setTargetPos] = useState({ x: startX, y: startY - 100 });
 
   useEffect(() => {
@@ -44,10 +45,10 @@ export function FloatingXP({ startX, startY, onComplete }: FloatingXPProps) {
         times: [0, 0.2, 0.8, 1],
         ease: "easeInOut",
       }}
-      className="fixed pointer-events-none z-50 font-black text-2xl text-emerald-500 drop-shadow-md"
+      className="fixed pointer-events-none z-50 font-black text-2xl text-emerald-500 drop-shadow-md whitespace-nowrap"
       style={{ translateX: "-50%", translateY: "-50%" }}
     >
-      +10 XP
+      {label}
     </motion.div>
   );
 }

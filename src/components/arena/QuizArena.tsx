@@ -7,6 +7,8 @@ import { useSearchParams } from "next/navigation";
 import { QuestionCard, type QuestionData } from "./QuestionCard";
 import { XPParticleBurst } from "./XPParticleBurst";
 import { FloatingXP } from "./FloatingXP";
+import { QuizIntro } from "./QuizIntro";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 
 interface AuthUser {
   id: string;
@@ -40,8 +42,13 @@ export function QuizArena() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
-  const [floatingXPs, setFloatingXPs] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [floatingXPs, setFloatingXPs] = useState<Array<{ id: number; x: number; y: number; label: string }>>([]);
   const [isGlow, setIsGlow] = useState(false);
+  const [currentCombo, setCurrentCombo] = useState(0);
+  const [hasUsedHint, setHasUsedHint] = useState(false);
+  const [hasShownIntro, setHasShownIntro] = useState(false);
+
+  const { avatarId } = useUserPreferences();
 
   useEffect(() => {
     let active = true;
@@ -97,21 +104,48 @@ export function QuizArena() {
   }, [selectedSubjectSlug]);
 
   const currentQuestion = !isFinished ? questions[currentIndex] : null;
+  const isBossQuestion = !isFinished && ((currentIndex + 1) % 5 === 0);
 
   function handleAnswer(isCorrect: boolean, event: React.MouseEvent): void {
     if (isCorrect) {
+      const newCombo = currentCombo + 1;
+      const multiplier = newCombo >= 2 ? newCombo : 1;
+      let baseXp = isBossQuestion ? 50 : 10;
+      
+      // Eren bonus: +5 XP for Science
+      let extraBonus = 0;
+      if (avatarId === "eren" && currentQuestion?.subject.toLowerCase().includes("science")) {
+        extraBonus = 5;
+      }
+      
+      const xpEarned = (baseXp * multiplier) + extraBonus;
+      
+      setCurrentCombo(newCombo);
       setCorrectAnswers((current) => current + 1);
-      setScore((current) => current + 10);
+      setScore((current) => current + xpEarned);
 
+      let labelText = `+${xpEarned} XP`;
+      if (newCombo >= 2) labelText += ` (Combo x${newCombo})`;
+      if (extraBonus > 0) labelText += ` (Eren Bonus)`;
+      
       const { clientX, clientY } = event;
       setParticles((current) => [...current, { id: Date.now(), x: clientX, y: clientY }]);
-      setFloatingXPs((current) => [...current, { id: Date.now(), x: clientX, y: clientY }]);
+      setFloatingXPs((current) => [...current, { id: Date.now(), x: clientX, y: clientY, label: labelText }]);
       
       // Delay the glow slightly so it happens when the floating XP approaches the progress bar
       setTimeout(() => {
         setIsGlow(true);
         setTimeout(() => setIsGlow(false), 600);
       }, 700);
+    } else {
+      // Mikasa bonus: 10% chance to prevent streak loss
+      if (avatarId === "mikasa" && Math.random() < 0.10) {
+        // Mikasa saved it! Do not reset currentCombo.
+        const { clientX, clientY } = event;
+        setFloatingXPs((current) => [...current, { id: Date.now(), x: clientX, y: clientY, label: "Streak Saved! (Mikasa)" }]);
+      } else {
+        setCurrentCombo(0);
+      }
     }
   }
 
@@ -166,6 +200,9 @@ export function QuizArena() {
     setParticles([]);
     setFloatingXPs([]);
     setIsGlow(false);
+    setCurrentCombo(0);
+    setHasUsedHint(false);
+    setHasShownIntro(false);
   }
 
   if (loading) {
@@ -206,12 +243,18 @@ export function QuizArena() {
       </div>
 
       <AnimatePresence mode="wait">
-        {currentQuestion && (
+        {!hasShownIntro && !isFinished && (
+          <QuizIntro key="quiz-intro" onComplete={() => setHasShownIntro(true)} />
+        )}
+
+        {hasShownIntro && currentQuestion && (
           <QuestionCard
             key={currentQuestion.id}
             data={currentQuestion}
+            isBoss={isBossQuestion}
             onAnswerSelected={handleAnswer}
             onNext={handleNext}
+            onUseHint={avatarId === "armin" && !hasUsedHint ? () => setHasUsedHint(true) : undefined}
           />
         )}
 
@@ -262,6 +305,7 @@ export function QuizArena() {
           key={fxp.id}
           startX={fxp.x}
           startY={fxp.y}
+          label={fxp.label}
           onComplete={() => removeFloatingXP(fxp.id)}
         />
       ))}

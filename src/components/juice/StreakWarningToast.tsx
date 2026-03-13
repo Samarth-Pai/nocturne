@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 export function StreakWarningToast() {
   const [isVisible, setIsVisible] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(14400); // 4 hours in seconds
 
   useEffect(() => {
     // Simulate checking streak status on mount
@@ -15,6 +16,23 @@ export function StreakWarningToast() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isVisible || timeLeft <= 0) return;
+    
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [isVisible, timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}h ${m}m ${s}s`;
+  };
 
   return (
     <AnimatePresence>
@@ -35,8 +53,18 @@ export function StreakWarningToast() {
             </div>
             
             <div className="flex-1 relative z-10">
-              <h3 className="font-bold text-slate-800 text-sm">Your streak is at risk!</h3>
-              <p className="text-slate-500 text-xs mt-1 font-medium">Complete a quiz in the next 4 hours to keep your 14-day streak alive.</p>
+              <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1">
+                <motion.span
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Your streak is at risk!
+                </motion.span>
+                <Flame size={14} className="text-orange-500" />
+              </h3>
+              <p className="text-slate-500 text-xs mt-1 font-medium">
+                Complete a quiz in the next <span className="font-bold text-orange-600 font-mono">{formatTime(timeLeft)}</span> to keep your 14-day streak alive.
+              </p>
             </div>
 
             <button 

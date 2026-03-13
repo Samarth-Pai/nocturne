@@ -19,13 +19,16 @@ export interface QuestionData {
 
 interface QuestionCardProps {
   data: QuestionData;
+  isBoss?: boolean;
   onAnswerSelected: (isCorrect: boolean, event: React.MouseEvent) => void;
   onNext?: () => void;
+  onUseHint?: () => void;
 }
 
-export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardProps) {
+export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, onUseHint }: QuestionCardProps) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [hiddenOptionId, setHiddenOptionId] = useState<string | null>(null);
 
   const handleSelect = (optionId: string, e: React.MouseEvent) => {
     if (selectedOptionId !== null) return; // Prevent multiple clicks
@@ -42,12 +45,14 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
   useEffect(() => {
     setSelectedOptionId(null);
     setIsCorrect(null);
+    setHiddenOptionId(null);
   }, [data.id]);
 
   // Alternatively, the parent should use a key. But we'll add a safety reset here too.
   if (selectedOptionId !== null && data.options.every(o => o.id !== selectedOptionId)) {
     setSelectedOptionId(null);
     setIsCorrect(null);
+    setHiddenOptionId(null);
   }
 
   const onNextRef = useRef(onNext);
@@ -90,26 +95,66 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
     }
   };
 
+  const handleHintClick = () => {
+    if (!onUseHint) return;
+    
+    // Find an incorrect option to hide
+    const incorrectOptions = data.options.filter(o => o.id !== data.correctOptionId);
+    if (incorrectOptions.length > 0) {
+      // Pick a random incorrect option
+      const toHide = incorrectOptions[Math.floor(Math.random() * incorrectOptions.length)];
+      setHiddenOptionId(toHide.id);
+    }
+    
+    // Notify parent to consume the hint
+    onUseHint();
+  };
+
   return (
     <motion.div
-      className="w-full max-w-2xl mx-auto rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden"
+      className={`w-full max-w-2xl mx-auto rounded-3xl border-2 bg-white p-8 shadow-sm relative overflow-hidden ${
+        isBoss ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]" : "border-slate-200"
+      }`}
       variants={shakeAnimation}
       initial="hidden"
       animate={isCorrect === false ? "shake" : "idle"}
       exit={{ opacity: 0, x: 50 }}
       style={{ perspective: 1000 }}
     >
-      {/* Decorative glow inside card (Light theme version) */}
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary-sky/10 rounded-full blur-[80px] pointer-events-none" />
+      {/* Decorative glow inside card */}
+      <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] pointer-events-none ${
+        isBoss ? "bg-amber-500/20" : "bg-primary-sky/10"
+      }`} />
 
-      {/* Question Text */}
-      <h2 className="text-2xl md:text-3xl font-heading font-black text-slate-800 mb-8 tracking-tight text-balance relative z-10">
-        {data.question}
-      </h2>
+      {/* Conditional Boss Label */}
+      {isBoss && (
+        <div className="mb-4 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-widest text-amber-600 relative z-10">
+          Boss Question
+        </div>
+      )}
+
+      {/* Question Text & Armin Hint */}
+      <div className="flex justify-between items-start gap-4 mb-8 relative z-10">
+        <h2 className={`text-2xl md:text-3xl font-heading font-black tracking-tight text-balance ${
+          isBoss ? "text-amber-950" : "text-slate-800"
+        }`}>
+          {data.question}
+        </h2>
+        {onUseHint && selectedOptionId === null && (
+          <button 
+            onClick={handleHintClick}
+            className="shrink-0 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-indigo-200 shadow-sm"
+          >
+            ✨ Use Hint
+          </button>
+        )}
+      </div>
 
       {/* Options */}
       <div className="flex flex-col gap-4 relative z-10">
         {data.options.map((option) => {
+          if (option.id === hiddenOptionId) return null;
+
           const isSelected = selectedOptionId === option.id;
           const isActuallyCorrect = option.id === data.correctOptionId;
 
