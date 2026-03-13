@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Rocket, BookOpen, Trophy, User } from "lucide-react";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 
 export function TopNavBar() {
   const pathname = usePathname();
+  const { avatarUrl } = useUserPreferences();
 
   const links = [
     { label: "Dashboard", href: "/", icon: <Rocket size={18} /> },
@@ -56,7 +58,14 @@ export function TopNavBar() {
                 <span className="text-xs font-bold text-slate-500 uppercase">Lvl. 12</span>
                 <span className="text-sm font-semibold text-primary-teal">1,250 XP</span>
              </div>
-             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-purple to-primary-coral border-2 border-white shadow-sm" />
+             <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-50">
+                <img 
+                  src={avatarUrl} 
+                  alt="Profile" 
+                  className="w-full h-full object-contain"
+                  style={{ imageRendering: 'pixelated' }}
+                />
+             </div>
           </div>
 
           {/* Mobile Menu Button - Placeholder */}

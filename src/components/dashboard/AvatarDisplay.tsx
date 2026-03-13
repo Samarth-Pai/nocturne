@@ -1,7 +1,8 @@
-"use client";
-
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Flame } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Zap, Flame, Camera } from "lucide-react";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { AvatarPickerModal } from "./AvatarPickerModal";
 
 interface AvatarLevelData {
   level: number;
@@ -13,6 +14,8 @@ interface AvatarLevelData {
 export function AvatarDisplay({ data }: { data: AvatarLevelData }) {
   const { level, xp, maxXp, streak } = data;
   const progressPercent = Math.min((xp / maxXp) * 100, 100);
+  const { avatarId, avatarUrl, changeAvatar } = useUserPreferences();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   // Simulated unlocks based on level
   const hasOutfit = level >= 3;
@@ -37,15 +40,24 @@ export function AvatarDisplay({ data }: { data: AvatarLevelData }) {
         )}
 
         {/* The Avatar Frame */}
-        <div className="relative z-10 w-48 h-48 rounded-full bg-white border-4 border-primary-sky/20 shadow-xl flex items-center justify-center overflow-hidden">
+        <div 
+          onClick={() => setIsPickerOpen(true)}
+          className="relative z-10 w-48 h-48 rounded-full bg-white border-4 border-primary-sky/20 shadow-xl flex items-center justify-center overflow-hidden hover:border-primary-sky transition-all group/circle"
+        >
           {/* Pixel Art Avatar */}
           <div className="relative w-full h-full p-2">
             <img 
-              src="/avatar.png" 
+              src={avatarUrl} 
               alt="Avatar" 
               className="w-full h-full object-contain"
               style={{ imageRendering: 'pixelated' }}
             />
+          </div>
+          
+          {/* Change Avatar Overlay on Hover */}
+          <div className="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center opacity-0 group-hover/circle:opacity-100 transition-opacity">
+            <Camera className="text-white mb-2" size={24} />
+            <span className="text-white text-xs font-bold uppercase tracking-wider">Change Avatar</span>
           </div>
         </div>
 
@@ -79,6 +91,13 @@ export function AvatarDisplay({ data }: { data: AvatarLevelData }) {
           </motion.div>
         </div>
       </div>
+
+      <AvatarPickerModal 
+        isOpen={isPickerOpen} 
+        onClose={() => setIsPickerOpen(false)} 
+        currentAvatarId={avatarId}
+        onSelect={changeAvatar}
+      />
     </div>
   );
 }
