@@ -35,11 +35,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       name: user.name,
     });
 
+    const avatarId = user.avatarId ?? "default";
+
     const response = NextResponse.json({
       user: {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        avatarId,
+        avatarUrl: avatarId === "default" ? "/avatar.png" : `/avatars/${avatarId}.png`,
         streak: user.streak,
         gamification: user.gamification,
       },

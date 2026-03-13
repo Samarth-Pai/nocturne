@@ -37,6 +37,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       email,
       passwordHash,
       name,
+      avatarId: "default",
       streak: {
         count: 0,
         lastActive: null,
@@ -57,11 +58,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       name: created.name,
     });
 
+    const avatarId = created.avatarId ?? "default";
+
     const response = NextResponse.json({
       user: {
         id: created._id.toString(),
         email: created.email,
         name: created.name,
+        avatarId,
+        avatarUrl: avatarId === "default" ? "/avatar.png" : `/avatars/${avatarId}.png`,
         streak: created.streak,
         gamification: created.gamification,
       },

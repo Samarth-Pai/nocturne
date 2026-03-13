@@ -22,6 +22,11 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true },
+    avatarId: {
+      type: String,
+      enum: ["default", "eren", "mikasa", "armin"],
+      default: "default",
+    },
     streak: { type: streakSchema, default: () => ({}) },
     gamification: { type: gamificationSchema, default: () => ({}) },
   },

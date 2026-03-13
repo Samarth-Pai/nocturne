@@ -20,6 +20,10 @@ interface GeminiQuestion {
   topic?: string;
 }
 
+type OptionId = "a" | "b" | "c" | "d";
+
+const OPTION_IDS: OptionId[] = ["a", "b", "c", "d"];
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -37,21 +41,116 @@ function sentenceChunks(rawText: string): string[] {
     .slice(0, 30);
 }
 
+function normalizeOptionText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function truncateText(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
+}
+
+function balanceOptionLengths(options: GeminiQuestionOption[]): GeminiQuestionOption[] {
+  const normalized = options.map((option) => ({
+    id: option.id,
+    text: normalizeOptionText(option.text),
+  }));
+
+  const lengths = normalized.map((option) => option.text.length);
+  const maxLength = Math.max(...lengths);
+  const minLength = Math.min(...lengths);
+
+  if (maxLength <= 0 || maxLength - minLength < 35) {
+    return normalized;
+  }
+
+  const targetMax = Math.min(95, Math.max(45, Math.round((maxLength + minLength) / 2)));
+
+  return normalized.map((option) => ({
+    id: option.id,
+    text: truncateText(option.text, targetMax),
+  }));
+}
+
+function shuffleOptions(
+  options: GeminiQuestionOption[],
+  correctOptionId: OptionId,
+): { options: GeminiQuestionOption[]; correctOptionId: OptionId } {
+  const balanced = balanceOptionLengths(options);
+  const shuffled = balanced.map((option) => ({ ...option }));
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  const remapped = shuffled.map((option, index) => ({
+    id: OPTION_IDS[index],
+    text: option.text,
+    originalId: option.id,
+  }));
+
+  const correct = remapped.find((option) => option.originalId === correctOptionId);
+
+  return {
+    options: remapped.map((option) => ({ id: option.id, text: option.text })),
+    correctOptionId: correct?.id ?? "a",
+  };
+}
+
+function buildFallbackQuestionStem(subject: string, chunk: string, index: number): string {
+  const cleaned = normalizeOptionText(chunk).replace(/["'`]/g, "");
+  const excerpt = truncateText(cleaned, 72);
+  const templates = [
+    `In ${subject}, which option best matches this idea: "${excerpt}"?`,
+    `Based on the uploaded ${subject} content, what is the best interpretation of: "${excerpt}"?`,
+    `Which option is most consistent with this ${subject} excerpt: "${excerpt}"?`,
+  ];
+
+  return templates[index % templates.length];
+}
+
 function generateQuestionsFallback(
   subject: string,
   subjectSlug: string,
   text: string,
 ): ReturnType<typeof normalizeGeminiQuestions> {
-  const chunks = sentenceChunks(text).slice(0, 10);
+  const chunks = sentenceChunks(text).slice(0, 12);
+  const usableChunks = chunks.length > 0 ? chunks : [text.replace(/\s+/g, " ").trim()].filter(Boolean);
   const now = Date.now();
 
-  return chunks.map((chunk, index) => {
+  return usableChunks.slice(0, 10).map((chunk, index) => {
     const questionId = `upload-${subjectSlug}-${now}-fallback-${index + 1}-${randomUUID().slice(0, 8)}`;
-    const answer = chunk.length > 180 ? `${chunk.slice(0, 177)}...` : chunk;
-    const optionA = answer;
-    const optionB = `Unrelated to ${subject}`;
-    const optionC = `Only partially discussed in this material`;
-    const optionD = `Not mentioned in the provided upload`;
+    const answer = truncateText(normalizeOptionText(chunk), 100);
+
+    const distractors = usableChunks
+      .filter((_, itemIndex) => itemIndex !== index)
+      .sort((left, right) => Math.abs(left.length - answer.length) - Math.abs(right.length - answer.length))
+      .slice(0, 3)
+      .map((item) => truncateText(normalizeOptionText(item), 100));
+
+    const fillerPool = [
+      "This claim is not clearly supported in the uploaded material.",
+      "The source content does not provide evidence for this statement.",
+      "This statement conflicts with the main ideas from the upload.",
+    ];
+
+    while (distractors.length < 3) {
+      distractors.push(fillerPool[distractors.length]);
+    }
+
+    const shuffled = shuffleOptions(
+      [
+        { id: "a", text: answer },
+        { id: "b", text: distractors[0] },
+        { id: "c", text: distractors[1] },
+        { id: "d", text: distractors[2] },
+      ],
+      "a",
+    );
 
     return {
       questionId,
@@ -60,15 +159,10 @@ function generateQuestionsFallback(
       subjectSlug,
       topic: subject,
       difficulty: "Medium",
-      question: `Which statement is directly supported by the uploaded ${subject} material?`,
-      options: [
-        { id: "a", text: optionA },
-        { id: "b", text: optionB },
-        { id: "c", text: optionC },
-        { id: "d", text: optionD },
-      ],
-      correctOptionId: "a" as const,
-      correctAnswer: "a",
+      question: buildFallbackQuestionStem(subject, chunk, index),
+      options: shuffled.options,
+      correctOptionId: shuffled.correctOptionId,
+      correctAnswer: shuffled.correctOptionId,
       explanation: "This statement is extracted from the uploaded material.",
       tags: [subjectSlug, "upload", "generated", "fallback"],
       source: "fallback-upload-parser",
@@ -120,6 +214,14 @@ function normalizeGeminiQuestions(
     .slice(0, 12)
     .map((question, index) => {
       const questionId = `upload-${subjectSlug}-${now}-${index + 1}-${randomUUID().slice(0, 8)}`;
+      const shuffled = shuffleOptions(
+        question.options.map((option) => ({
+          id: option.id,
+          text: option.text,
+        })),
+        question.correctOptionId,
+      );
+
       return {
         questionId,
         id: questionId,
@@ -128,12 +230,9 @@ function normalizeGeminiQuestions(
         topic: question.topic?.trim() || subject,
         difficulty: question.difficulty?.trim() || "Medium",
         question: question.question.trim(),
-        options: question.options.map((option) => ({
-          id: option.id,
-          text: option.text.trim(),
-        })),
-        correctOptionId: question.correctOptionId,
-        correctAnswer: question.correctOptionId,
+        options: shuffled.options,
+        correctOptionId: shuffled.correctOptionId,
+        correctAnswer: shuffled.correctOptionId,
         explanation: question.explanation.trim(),
         tags: [subjectSlug, "upload", "generated", "gemini"],
         source: "gemini-upload-parser",
@@ -169,6 +268,7 @@ async function generateQuestionsWithGemini(
     "3) Avoid duplicate or near-duplicate questions.",
     "4) Do not use markdown code fences.",
     "5) Questions must be answerable from the provided content.",
+    "6) Keep all option lengths reasonably similar and avoid making the correct answer obviously longer.",
     "Content:",
     contentSample,
   ].join("\n");

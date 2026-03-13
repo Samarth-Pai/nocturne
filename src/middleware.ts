@@ -5,8 +5,15 @@ const PUBLIC_PATHS = ["/auth"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isStaticAsset = /\.[a-zA-Z0-9]+$/.test(pathname);
 
-  if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname === "/favicon.ico") {
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname === "/favicon.ico" ||
+    isStaticAsset ||
+    pathname.startsWith("/avatars")
+  ) {
     return NextResponse.next();
   }
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { QuestionCard, type QuestionData } from "./QuestionCard";
 import { XPParticleBurst } from "./XPParticleBurst";
+import { FloatingXP } from "./FloatingXP";
 
 interface AuthUser {
   id: string;
@@ -39,6 +40,8 @@ export function QuizArena() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [floatingXPs, setFloatingXPs] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [isGlow, setIsGlow] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -102,6 +105,13 @@ export function QuizArena() {
 
       const { clientX, clientY } = event;
       setParticles((current) => [...current, { id: Date.now(), x: clientX, y: clientY }]);
+      setFloatingXPs((current) => [...current, { id: Date.now(), x: clientX, y: clientY }]);
+      
+      // Delay the glow slightly so it happens when the floating XP approaches the progress bar
+      setTimeout(() => {
+        setIsGlow(true);
+        setTimeout(() => setIsGlow(false), 600);
+      }, 700);
     }
   }
 
@@ -144,12 +154,18 @@ export function QuizArena() {
     setParticles((current) => current.filter((particle) => particle.id !== id));
   }
 
+  function removeFloatingXP(id: number): void {
+    setFloatingXPs((current) => current.filter((fxp) => fxp.id !== id));
+  }
+
   function resetQuiz(): void {
     setCurrentIndex(0);
     setScore(0);
     setCorrectAnswers(0);
     setIsFinished(false);
     setParticles([]);
+    setFloatingXPs([]);
+    setIsGlow(false);
   }
 
   if (loading) {
@@ -171,11 +187,22 @@ export function QuizArena() {
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-10 py-8 relative">
-      <div className="w-full max-w-2xl mx-auto flex justify-between items-center px-2">
-        <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
-          Question {Math.min(currentIndex + 1, questions.length)} of {questions.length}
-        </p>
-        <p className="text-sm font-bold text-primary-sky">{score} XP</p>
+      <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 px-2">
+        <div className="flex justify-between items-center">
+          <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+            Question {Math.min(currentIndex + 1, questions.length)} of {questions.length}
+          </p>
+          <p id="xp-score-indicator" className="text-sm font-bold text-primary-sky">{score} XP</p>
+        </div>
+        <div 
+          id="quiz-progress-bar"
+          className={`w-full h-2 bg-slate-100 rounded-full overflow-hidden transition-all duration-300 ${isGlow ? 'shadow-[0_0_15px_rgba(56,189,248,0.8)]' : ''}`}
+        >
+          <div 
+            className="h-full bg-primary-sky transition-all duration-500" 
+            style={{ width: `${(Math.min(currentIndex, questions.length) / Math.max(1, questions.length)) * 100}%` }} 
+          />
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -227,6 +254,15 @@ export function QuizArena() {
           x={particle.x}
           y={particle.y}
           onComplete={() => removeParticles(particle.id)}
+        />
+      ))}
+
+      {floatingXPs.map((fxp) => (
+        <FloatingXP
+          key={fxp.id}
+          startX={fxp.x}
+          startY={fxp.y}
+          onComplete={() => removeFloatingXP(fxp.id)}
         />
       ))}
     </div>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Medal, Award, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 interface LeaderboardUser {
   rank: number;
@@ -10,23 +11,16 @@ interface LeaderboardUser {
   username: string;
   level: number;
   xp: number;
+  avatarId?: string;
+  avatarUrl?: string;
 }
-
-const avatarGradients = [
-  "from-yellow-400 to-orange-500",
-  "from-slate-300 to-slate-500",
-  "from-amber-600 to-orange-700",
-  "from-primary-sky to-primary-teal",
-  "from-accent-purple to-pink-500",
-  "from-emerald-400 to-teal-500",
-  "from-rose-400 to-red-500",
-];
 
 export function Leaderboard() {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
 
   useEffect(() => {
-    fetch("/api/leaderboard")
+    const loadLeaderboard = () => {
+      fetch("/api/leaderboard", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) {
           return;
@@ -38,11 +32,21 @@ export function Leaderboard() {
       .catch(() => {
         setUsers([]);
       });
+    };
+
+    const onAvatarUpdated = () => {
+      loadLeaderboard();
+    };
+
+    loadLeaderboard();
+    window.addEventListener("avatar-updated", onAvatarUpdated);
+
+    return () => {
+      window.removeEventListener("avatar-updated", onAvatarUpdated);
+    };
   }, []);
 
   const topThree = useMemo(() => users.slice(0, 3), [users]);
-
-  const getAvatarGradient = (index: number) => avatarGradients[index % avatarGradients.length];
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -80,7 +84,15 @@ export function Leaderboard() {
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center gap-3 relative"
           >
-            <div className={`w-20 h-20 rounded-full border-4 border-white shadow-lg bg-gradient-to-br ${getAvatarGradient(1)}`} />
+            <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white relative">
+              <Image
+                src={topThree[1].avatarUrl ?? "/avatar.png"}
+                alt={`${topThree[1].username} avatar`}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            </div>
             <div className="w-24 h-28 bg-gradient-to-t from-slate-200 to-slate-100 rounded-t-xl border border-slate-300 shadow-inner flex flex-col items-center justify-start pt-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-white/20" />
               <span className="font-heading font-black text-4xl text-slate-400 opacity-50 relative z-10">2</span>
@@ -99,7 +111,15 @@ export function Leaderboard() {
             <div className="absolute -top-6 text-yellow-500 animate-bounce">
               <Sparkles size={24} />
             </div>
-            <div className={`w-24 h-24 rounded-full border-4 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)] bg-gradient-to-br ${getAvatarGradient(0)}`} />
+            <div className="w-24 h-24 rounded-full border-4 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)] overflow-hidden bg-white relative">
+              <Image
+                src={topThree[0].avatarUrl ?? "/avatar.png"}
+                alt={`${topThree[0].username} avatar`}
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            </div>
             <div className="w-28 h-40 bg-gradient-to-t from-yellow-300 to-yellow-100 rounded-t-xl border border-yellow-400 shadow-inner flex flex-col items-center justify-start pt-4 relative overflow-hidden">
               <div className="absolute top-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent" />
               <span className="font-heading font-black text-6xl text-yellow-600 opacity-50 relative z-10">1</span>
@@ -116,7 +136,15 @@ export function Leaderboard() {
             transition={{ delay: 0.4 }}
             className="flex flex-col items-center gap-3 relative"
           >
-            <div className={`w-20 h-20 rounded-full border-4 border-white shadow-lg bg-gradient-to-br ${getAvatarGradient(2)}`} />
+            <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white relative">
+              <Image
+                src={topThree[2].avatarUrl ?? "/avatar.png"}
+                alt={`${topThree[2].username} avatar`}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            </div>
             <div className="w-24 h-24 bg-gradient-to-t from-orange-200 to-orange-100 rounded-t-xl border border-orange-300 shadow-inner flex flex-col items-center justify-start pt-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-white/20" />
               <span className="font-heading font-black text-4xl text-orange-400 opacity-50 relative z-10">3</span>
@@ -155,7 +183,15 @@ export function Leaderboard() {
               <div className="col-span-2 md:col-span-1 flex justify-center">{getRankIcon(user.rank)}</div>
 
               <div className="col-span-6 md:col-span-5 flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full border-2 border-white shadow-sm bg-gradient-to-br ${getAvatarGradient(index)}`} />
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white relative">
+                  <Image
+                    src={user.avatarUrl ?? "/avatar.png"}
+                    alt={`${user.username} avatar`}
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
+                </div>
                 <span className="font-bold text-slate-700">{user.username}</span>
               </div>
 

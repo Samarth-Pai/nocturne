@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 export interface Option {
@@ -50,6 +50,25 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
     setIsCorrect(null);
   }
 
+  const onNextRef = useRef(onNext);
+  useEffect(() => {
+    onNextRef.current = onNext;
+  }, [onNext]);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (selectedOptionId !== null) {
+      timeout = setTimeout(() => {
+        if (onNextRef.current) {
+          onNextRef.current();
+        }
+      }, 1500); // Wait 1.5 seconds before loading next question
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [selectedOptionId]);
+
   // 3D Tilt Shake animation variants
   const shakeAnimation: any = {
     shake: {
@@ -93,7 +112,7 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
         {data.options.map((option) => {
           const isSelected = selectedOptionId === option.id;
           const isActuallyCorrect = option.id === data.correctOptionId;
-          
+
           let buttonClass = "bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-primary-sky/50 shadow-sm";
           let icon = null;
 
@@ -108,6 +127,7 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
           } else if (selectedOptionId !== null && isActuallyCorrect) {
             // Show the correct answer if the user got it wrong
             buttonClass = "bg-emerald-50/50 border-emerald-300 text-emerald-600/70";
+            icon = <CheckCircle2 className="text-emerald-500/70" size={20} />;
           }
 
           return (
@@ -152,16 +172,6 @@ export function QuestionCard({ data, onAnswerSelected, onNext }: QuestionCardPro
         )}
       </AnimatePresence>
 
-      {selectedOptionId !== null && onNext && (
-        <button
-          type="button"
-          onClick={onNext}
-          className="mt-6 w-full rounded-xl bg-slate-800 px-4 py-3 text-white font-bold hover:bg-slate-700 transition-colors"
-        >
-          Next Question
-        </button>
-      )}
-      
     </motion.div>
   );
 }
