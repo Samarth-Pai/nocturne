@@ -60,18 +60,18 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
 
   return (
     <motion.div
-      className="w-full max-w-2xl mx-auto rounded-3xl border border-indigo-500/30 bg-[#0a0a0c] p-8 shadow-[0_0_20px_rgba(99,102,241,0.25)] relative overflow-hidden"
+      className="w-full max-w-2xl mx-auto rounded-3xl border border-slate-200 bg-white p-8 shadow-sm relative overflow-hidden"
       variants={shakeAnimation}
       initial="hidden"
       animate={isCorrect === false ? "shake" : "idle"}
       exit={{ opacity: 0, x: 50 }}
       style={{ perspective: 1000 }}
     >
-      {/* Decorative glow inside card */}
-      <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-[80px] pointer-events-none" />
+      {/* Decorative glow inside card (Light theme version) */}
+      <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary-sky/10 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Question Text */}
-      <h2 className="text-2xl md:text-3xl font-bold text-white mb-8 tracking-tight text-balance relative z-10">
+      <h2 className="text-2xl md:text-3xl font-heading font-black text-slate-800 mb-8 tracking-tight text-balance relative z-10">
         {data.question}
       </h2>
 
@@ -81,20 +81,20 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
           const isSelected = selectedOptionId === option.id;
           const isActuallyCorrect = option.id === data.correctOptionId;
           
-          let buttonClass = "bg-white/5 border-white/10 text-white/90 hover:bg-white/10 hover:border-indigo-500/50";
+          let buttonClass = "bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-primary-sky/50 shadow-sm";
           let icon = null;
 
           if (isSelected) {
             if (isActuallyCorrect) {
-              buttonClass = "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
-              icon = <CheckCircle2 className="text-emerald-400" size={20} />;
+              buttonClass = "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+              icon = <CheckCircle2 className="text-emerald-500" size={20} />;
             } else {
-              buttonClass = "bg-rose-500/20 border-rose-500/50 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]";
-              icon = <XCircle className="text-rose-400" size={20} />;
+              buttonClass = "bg-rose-50 border-rose-500 text-rose-700 shadow-[0_0_15px_rgba(244,63,94,0.2)]";
+              icon = <XCircle className="text-rose-500" size={20} />;
             }
           } else if (selectedOptionId !== null && isActuallyCorrect) {
             // Show the correct answer if the user got it wrong
-            buttonClass = "bg-emerald-500/10 border-emerald-500/30 text-emerald-200/50";
+            buttonClass = "bg-emerald-50/50 border-emerald-300 text-emerald-600/70";
           }
 
           return (
@@ -102,9 +102,9 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
               key={option.id}
               onClick={(e) => handleSelect(option.id, e)}
               disabled={selectedOptionId !== null}
-              whileHover={selectedOptionId === null ? { scale: 1.02 } : { scale: 1 }}
+              whileHover={selectedOptionId === null ? { scale: 1.02, y: -2 } : { scale: 1 }}
               whileTap={selectedOptionId === null ? { scale: 0.98 } : { scale: 1 }}
-              className={`relative flex items-center justify-between p-4 rounded-xl border transition-all text-left text-lg font-medium ${buttonClass}`}
+              className={`relative flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left text-lg font-medium ${buttonClass}`}
             >
               {option.text}
               {icon}
@@ -120,15 +120,15 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
             initial={{ opacity: 0, height: 0, marginTop: 0 }}
             animate={{ opacity: 1, height: "auto", marginTop: 24 }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            className="rounded-xl bg-rose-950/40 border border-rose-500/20 p-4 relative z-10 shadow-[0_0_20px_rgba(244,63,94,0.1)]"
+            className="rounded-xl bg-rose-50 border border-rose-200 p-4 relative z-10 shadow-sm"
           >
             <div className="flex items-start gap-3">
               <div className="mt-1">
                 <XCircle className="text-rose-500" size={20} />
               </div>
               <div>
-                <h4 className="text-rose-400 font-bold mb-1 tracking-wide text-sm">INCORRECT</h4>
-                <p className="text-white/80 text-sm leading-relaxed">
+                <h4 className="text-rose-700 font-bold mb-1 tracking-wide text-sm">INCORRECT</h4>
+                <p className="text-rose-900/80 text-sm leading-relaxed font-medium">
                   {data.explanation}
                 </p>
               </div>

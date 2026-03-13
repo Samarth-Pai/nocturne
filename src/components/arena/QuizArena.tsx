@@ -4,75 +4,76 @@ import { useState } from "react";
 import { DuelOverlay } from "./DuelOverlay";
 import { QuestionCard, QuestionData } from "./QuestionCard";
 import { XPParticleBurst } from "./XPParticleBurst";
+import { useGameSounds } from "@/hooks/useGameSounds";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Mock Data
 const MOCK_QUESTIONS: QuestionData[] = [
   {
     id: "q1",
-    question: "What is the time complexity of a purely iterative binary search?",
+    question: "What is the primary function of a mitochondria in a cell?",
     options: [
-      { id: "o1", text: "O(n)" },
-      { id: "o2", text: "O(log n)" },
-      { id: "o3", text: "O(1)" },
-      { id: "o4", text: "O(n^2)" },
+      { id: "o1", text: "Protein Synthesis" },
+      { id: "o2", text: "Energy Production" },
+      { id: "o3", text: "Waste Disposal" },
+      { id: "o4", text: "Cell Division" },
     ],
     correctOptionId: "o2",
-    explanation: "Binary search divides the search space in half at each step, resulting in logarithmic time complexity.",
+    explanation: "The mitochondria are known as the powerhouses of the cell. They are organelles that act like a digestive system which takes in nutrients, breaks them down, and creates energy rich molecules for the cell."
   },
   {
     id: "q2",
-    question: "Which data structure operates on a Last In, First Out (LIFO) principle?",
+    question: "Which element has the chemical symbol 'O'?",
     options: [
-      { id: "o1", text: "Queue" },
-      { id: "o2", text: "Linked List" },
-      { id: "o3", text: "Stack" },
-      { id: "o4", text: "Tree" },
+      { id: "o1", text: "Gold" },
+      { id: "o2", text: "Osmium" },
+      { id: "o3", text: "Oxygen" },
+      { id: "o4", text: "Oganesson" },
     ],
     correctOptionId: "o3",
-    explanation: "A Stack adds elements to the top and removes from the top, operating precisely under LIFO rules.",
-  },
-  {
-    id: "q3",
-    question: "What does 'useState' in React return?",
-    options: [
-      { id: "o1", text: "A class instance and a render function" },
-      { id: "o2", text: "The current state value and a function to update it" },
-      { id: "o3", text: "A DOM element reference" },
-      { id: "o4", text: "A boolean representing component mount status" },
-    ],
-    correctOptionId: "o2",
-    explanation: "The useState Hook returns an array containing the current state variable and a setter function to update that state.",
+    explanation: "Oxygen is the chemical element with the symbol O and atomic number 8."
   }
 ];
 
 export function QuizArena() {
+  const { playClick, playLevelUp } = useGameSounds();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [particles, setParticles] = useState<{ x: number; y: number; id: number }[]>([]);
+  const [particles, setParticles] = useState<{ id: number, x: number, y: number }[]>([]);
+  
+  // Duel Progress State
+  const [userProgress, setUserProgress] = useState(0);
 
-  const handleAnswer = (isCorrect: boolean, e: React.MouseEvent) => {
+  const currentQuestion = MOCK_QUESTIONS[currentIndex];
+
+  const handleAnswer = (isCorrect: boolean, event: React.MouseEvent) => {
+    
     if (isCorrect) {
-      setScore((s) => s + 10);
+      playLevelUp(); // Short chime for correct
+      setScore(s => s + 10);
+      setUserProgress(p => p + 50); // Advance duel bar
       
-      // Trigger particles at click location
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
-      setParticles(prev => [...prev, { x: rect.left + rect.width / 2, y: rect.top, id: Date.now() }]);
-
-      // Move to next question automatically after a short delay
+      // Spawn particles at click location
+      const { clientX, clientY } = event;
+      setParticles(prev => [...prev, { id: Date.now(), x: clientX, y: clientY }]);
+      
       setTimeout(() => {
-        if (currentIndex < MOCK_QUESTIONS.length - 1) {
-          setCurrentIndex(curr => curr + 1);
-        }
-      }, 1500);
+        handleNext();
+      }, 1500); 
     } else {
-      // If incorrect, give them some time to read the red explanation before manually moving on,
-      // or implement a Next button. For automation sake, we wait 3 seconds.
+      playClick(); // Error sound could go here, using click for now
       setTimeout(() => {
-        if (currentIndex < MOCK_QUESTIONS.length - 1) {
-          setCurrentIndex((curr) => curr + 1);
-        }
-      }, 3500);
+        handleNext();
+      }, 3000); // Give them longer to read the explanation
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < MOCK_QUESTIONS.length - 1) {
+      setCurrentIndex(curr => curr + 1);
+    } else {
+      // Quiz Complete
+      setCurrentIndex(MOCK_QUESTIONS.length);
     }
   };
 
@@ -80,29 +81,35 @@ export function QuizArena() {
     setParticles(prev => prev.filter(p => p.id !== id));
   };
 
-  const currentQuestion = MOCK_QUESTIONS[currentIndex];
-  // Calculate a fake percentage for user progress (based on score)
-  const userProgress = Math.min((score / (MOCK_QUESTIONS.length * 10)) * 100, 100);
-
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-12 py-8 relative">
       
-      {/* Background Ambience */}
-      <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-indigo-900/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-purple-900/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Background Ambience (Light Theme) */}
+      <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-primary-sky/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-primary-teal/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Duel Overlay */}
+      {/* Duel Overlay OR Standard Progress - We'll keep Duel Overlay for now, just theme it later if needed */}
       <DuelOverlay userProgress={userProgress} />
 
       {/* Main Arena Area */}
-      <div className="flex-1 w-full relative h-[400px]">
+      <div className="flex-1 w-full relative h-[450px]">
         <AnimatePresence mode="wait">
           {currentQuestion && (
-            <QuestionCard 
-              key={currentQuestion.id} 
-              data={currentQuestion} 
-              onAnswerSelected={handleAnswer} 
-            />
+            <div key={currentQuestion.id} className="w-full flex flex-col items-center">
+              {/* Question Progress Indicator */}
+              <div className="w-full max-w-2xl flex justify-between items-center mb-4 px-4">
+                <span className="font-bold text-slate-500 uppercase tracking-wide text-sm">
+                  Question {currentIndex + 1} of {MOCK_QUESTIONS.length}
+                </span>
+                <span className="font-bold text-accent-purple bg-accent-purple/10 px-3 py-1 rounded-full text-sm">
+                  +10 XP
+                </span>
+              </div>
+              <QuestionCard 
+                data={currentQuestion} 
+                onAnswerSelected={handleAnswer} 
+              />
+            </div>
           )}
 
           {!currentQuestion && (
@@ -110,12 +117,19 @@ export function QuizArena() {
               key="end"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center text-white p-12 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md"
+              className="text-center p-12 rounded-3xl border border-slate-200 bg-white/50 backdrop-blur-md shadow-sm mx-auto max-w-2xl mt-12"
             >
-              <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400 mb-4">
+              <h2 className="font-heading text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-sky to-primary-teal mb-4">
                 Arena Conquered!
               </h2>
-              <p className="text-xl text-white/70">Final Score: {score}</p>
+              <p className="text-xl font-medium text-slate-600 mb-8">Final Score: {score}</p>
+              
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="px-8 py-3 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 transition-colors shadow-md"
+              >
+                Return to Dashboard
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
