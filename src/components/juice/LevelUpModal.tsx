@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { Sparkles, Trophy } from "lucide-react";
-import { useGameSounds } from "@/hooks/useGameSounds";
+import { playLevelUpSound } from "@/lib/audio";
 
 interface LevelUpModalProps {
   isOpen: boolean;
@@ -13,13 +13,12 @@ interface LevelUpModalProps {
 }
 
 export function LevelUpModal({ isOpen, newLevel, onClose }: LevelUpModalProps) {
-  const { playLevelUp } = useGameSounds();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
-      playLevelUp();
+      playLevelUpSound();
       
       // Fire confetti
       const duration = 3 * 1000;
@@ -52,7 +51,7 @@ export function LevelUpModal({ isOpen, newLevel, onClose }: LevelUpModalProps) {
     } else {
       setTimeout(() => setMounted(false), 500); // Allow exit animation to run
     }
-  }, [isOpen, playLevelUp, onClose]);
+  }, [isOpen, onClose]);
 
   if (!mounted && !isOpen) return null;
 

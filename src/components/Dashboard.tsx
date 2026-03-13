@@ -8,6 +8,7 @@ import { LevelUpModal } from "@/components/juice/LevelUpModal";
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { BadgeGrid } from "./widgets/BadgeGrid";
+import { getNextLevelXp } from "@/lib/levels";
 
 interface WeakSubject {
   subject: string;
@@ -31,9 +32,29 @@ export function Dashboard() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [weakSubjects, setWeakSubjects] = useState<WeakSubject[]>([]);
   const [subjects, setSubjects] = useState<SubjectOverview[]>([]);
+  const [userData, setUserData] = useState({ level: 1, xp: 0, maxXp: 50, streak: 0, name: "" });
 
   useEffect(() => {
     const token = localStorage.getItem("levelup_token");
+    
+    fetch("/api/auth/me", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.user) {
+          const lvl = data.user.gamification?.level ?? 1;
+          setUserData({
+            name: data.user.name ?? "",
+            level: lvl,
+            xp: data.user.gamification?.xp ?? 0,
+            maxXp: getNextLevelXp(lvl),
+            streak: data.user.streak?.count ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
 
     fetch("/api/analytics/weak-subjects", {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -83,14 +104,6 @@ export function Dashboard() {
     },
   };
 
-  // Mock user data
-  const userData = {
-    level: 12,
-    xp: 3450,
-    maxXp: 5000,
-    streak: 14
-  };
-
   // Demo trigger for hackathon presentation
   const triggerLevelUp = () => {
     playClick();
@@ -105,7 +118,7 @@ export function Dashboard() {
       <div className="w-full flex justify-between items-center mb-8">
         <div>
           <h1 className="font-heading font-black text-3xl md:text-4xl text-slate-800 tracking-tight">
-            Welcome back, <span className="text-primary-sky">Alex!</span>
+            Welcome back, <span className="text-primary-sky">{userData.name || "Hero"}!</span>
           </h1>
           <p className="text-slate-500 font-medium mt-1">Ready to level up your knowledge today?</p>
         </div>

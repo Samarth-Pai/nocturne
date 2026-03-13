@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import { getAuthUserFromRequest } from "@/lib/auth";
 import { QuizAttemptModel, UserModel } from "@/lib/models";
+import { calculateLevel } from "@/lib/levels";
 
 function getDayStamp(date: Date): string {
   return `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`;
@@ -70,9 +71,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     lastActive: now,
   };
 
+  const previousXp = user.gamification?.xp ?? 0;
+  const previousLevel = calculateLevel(previousXp);
+  const newXp = previousXp + score;
+  const newLevel = calculateLevel(newXp);
+  const experiencedLevelUp = newLevel > previousLevel;
+
   user.gamification = {
     ...user.gamification,
-    xp: (user.gamification?.xp ?? 0) + score,
+    xp: newXp,
+    level: newLevel,
     streak: {
       count: nextStreak,
       lastActive: now,
@@ -85,6 +93,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     ok: true,
     streak: user.streak,
     gamification: user.gamification,
+    experiencedLevelUp,
+    newLevel,
     attempt: {
       subject,
       subjectSlug,

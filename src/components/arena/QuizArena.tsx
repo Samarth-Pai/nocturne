@@ -8,7 +8,9 @@ import { QuestionCard, type QuestionData } from "./QuestionCard";
 import { XPParticleBurst } from "./XPParticleBurst";
 import { FloatingXP } from "./FloatingXP";
 import { QuizIntro } from "./QuizIntro";
+import { LevelUpModal } from "@/components/juice/LevelUpModal";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { playSuccessSound, playErrorSound } from "@/lib/audio";
 
 interface AuthUser {
   id: string;
@@ -47,6 +49,13 @@ export function QuizArena() {
   const [currentCombo, setCurrentCombo] = useState(0);
   const [hasUsedHint, setHasUsedHint] = useState(false);
   const [hasShownIntro, setHasShownIntro] = useState(false);
+  
+  // Power-up States
+  const [usedFiftyFifty, setUsedFiftyFifty] = useState(false);
+  const [usedSkip, setUsedSkip] = useState(false);
+  const [usedDoubleXP, setUsedDoubleXP] = useState(false);
+  const [isDoubleXPActive, setIsDoubleXPActive] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ show: false, level: 0 });
 
   const { avatarId } = useUserPreferences();
 
@@ -108,9 +117,15 @@ export function QuizArena() {
 
   function handleAnswer(isCorrect: boolean, event: React.MouseEvent): void {
     if (isCorrect) {
+      playSuccessSound();
       const newCombo = currentCombo + 1;
       const multiplier = newCombo >= 2 ? newCombo : 1;
       let baseXp = isBossQuestion ? 50 : 10;
+      
+      if (isDoubleXPActive) {
+        baseXp *= 2;
+        setIsDoubleXPActive(false); // consume the buff
+      }
       
       // Eren bonus: +5 XP for Science
       let extraBonus = 0;
@@ -126,6 +141,7 @@ export function QuizArena() {
 
       let labelText = `+${xpEarned} XP`;
       if (newCombo >= 2) labelText += ` (Combo x${newCombo})`;
+      if (isDoubleXPActive) labelText += ` (Double XP)`;
       if (extraBonus > 0) labelText += ` (Eren Bonus)`;
       
       const { clientX, clientY } = event;
@@ -138,6 +154,7 @@ export function QuizArena() {
         setTimeout(() => setIsGlow(false), 600);
       }, 700);
     } else {
+      playErrorSound();
       // Mikasa bonus: 10% chance to prevent streak loss
       if (avatarId === "mikasa" && Math.random() < 0.10) {
         // Mikasa saved it! Do not reset currentCombo.
@@ -179,8 +196,11 @@ export function QuizArena() {
     });
 
     if (response.ok) {
-      const data = (await response.json()) as CompletePayload;
+      const data = (await response.json()) as CompletePayload & { experiencedLevelUp?: boolean, newLevel?: number };
       setStreakCount(data.streak?.count ?? null);
+      if (data.experiencedLevelUp && data.newLevel) {
+        setLevelUpData({ show: true, level: data.newLevel });
+      }
     }
   }
 
@@ -203,6 +223,10 @@ export function QuizArena() {
     setCurrentCombo(0);
     setHasUsedHint(false);
     setHasShownIntro(false);
+    setUsedFiftyFifty(false);
+    setUsedSkip(false);
+    setUsedDoubleXP(false);
+    setIsDoubleXPActive(false);
   }
 
   if (loading) {
@@ -224,6 +248,11 @@ export function QuizArena() {
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-10 py-8 relative">
+      <LevelUpModal 
+        isOpen={levelUpData.show} 
+        newLevel={levelUpData.level} 
+        onClose={() => setLevelUpData(prev => ({ ...prev, show: false }))} 
+      />
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 px-2">
         <div className="flex justify-between items-center">
           <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
@@ -255,6 +284,10 @@ export function QuizArena() {
             onAnswerSelected={handleAnswer}
             onNext={handleNext}
             onUseHint={avatarId === "armin" && !hasUsedHint ? () => setHasUsedHint(true) : undefined}
+            onUseFiftyFifty={!usedFiftyFifty ? () => setUsedFiftyFifty(true) : undefined}
+            onUseSkip={!usedSkip ? () => { setUsedSkip(true); handleNext(); } : undefined}
+            onUseDoubleXP={!usedDoubleXP ? () => { setUsedDoubleXP(true); setIsDoubleXPActive(true); } : undefined}
+            isDoubleXPActive={isDoubleXPActive}
           />
         )}
 

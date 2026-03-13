@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Zap, FastForward, SplitSquareVertical } from "lucide-react";
 
 export interface Option {
   id: string;
@@ -23,12 +23,16 @@ interface QuestionCardProps {
   onAnswerSelected: (isCorrect: boolean, event: React.MouseEvent) => void;
   onNext?: () => void;
   onUseHint?: () => void;
+  onUseFiftyFifty?: () => void;
+  onUseSkip?: () => void;
+  onUseDoubleXP?: () => void;
+  isDoubleXPActive?: boolean;
 }
 
-export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, onUseHint }: QuestionCardProps) {
+export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, onUseHint, onUseFiftyFifty, onUseSkip, onUseDoubleXP, isDoubleXPActive }: QuestionCardProps) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [hiddenOptionId, setHiddenOptionId] = useState<string | null>(null);
+  const [hiddenOptionIds, setHiddenOptionIds] = useState<string[]>([]);
 
   const handleSelect = (optionId: string, e: React.MouseEvent) => {
     if (selectedOptionId !== null) return; // Prevent multiple clicks
@@ -45,14 +49,14 @@ export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, o
   useEffect(() => {
     setSelectedOptionId(null);
     setIsCorrect(null);
-    setHiddenOptionId(null);
+    setHiddenOptionIds([]);
   }, [data.id]);
 
   // Alternatively, the parent should use a key. But we'll add a safety reset here too.
   if (selectedOptionId !== null && data.options.every(o => o.id !== selectedOptionId)) {
     setSelectedOptionId(null);
     setIsCorrect(null);
-    setHiddenOptionId(null);
+    setHiddenOptionIds([]);
   }
 
   const onNextRef = useRef(onNext);
@@ -101,13 +105,33 @@ export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, o
     // Find an incorrect option to hide
     const incorrectOptions = data.options.filter(o => o.id !== data.correctOptionId);
     if (incorrectOptions.length > 0) {
-      // Pick a random incorrect option
-      const toHide = incorrectOptions[Math.floor(Math.random() * incorrectOptions.length)];
-      setHiddenOptionId(toHide.id);
+      // Pick a random incorrect option we haven't hidden yet
+      const availableToHide = incorrectOptions.filter(o => !hiddenOptionIds.includes(o.id));
+      if (availableToHide.length > 0) {
+        const toHide = availableToHide[Math.floor(Math.random() * availableToHide.length)];
+        setHiddenOptionIds(prev => [...prev, toHide.id]);
+      }
     }
     
     // Notify parent to consume the hint
     onUseHint();
+  };
+
+  const handleFiftyFiftyClick = () => {
+    if (!onUseFiftyFifty) return;
+    
+    // Find all incorrect options not currently hidden
+    const incorrectOptions = data.options.filter(o => o.id !== data.correctOptionId && !hiddenOptionIds.includes(o.id));
+    
+    // Shuffle and pick up to 2
+    const shuffled = incorrectOptions.sort(() => 0.5 - Math.random());
+    const toHide = shuffled.slice(0, 2).map(o => o.id);
+    
+    if (toHide.length > 0) {
+      setHiddenOptionIds(prev => [...prev, ...toHide]);
+    }
+    
+    onUseFiftyFifty();
   };
 
   return (
@@ -140,20 +164,55 @@ export function QuestionCard({ data, isBoss = false, onAnswerSelected, onNext, o
         }`}>
           {data.question}
         </h2>
-        {onUseHint && selectedOptionId === null && (
-          <button 
-            onClick={handleHintClick}
-            className="shrink-0 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-indigo-200 shadow-sm"
-          >
-            ✨ Use Hint
-          </button>
-        )}
+        <div className="flex flex-col items-end shrink-0 gap-2">
+          {selectedOptionId === null && (
+            <div className="flex flex-wrap justify-end gap-2">
+              {onUseDoubleXP && (
+                <button 
+                  onClick={onUseDoubleXP}
+                  className="bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-purple-200 shadow-sm"
+                >
+                  <Zap size={14} /> 2x XP
+                </button>
+              )}
+              {onUseFiftyFifty && (
+                <button 
+                  onClick={handleFiftyFiftyClick}
+                  className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-emerald-200 shadow-sm"
+                >
+                  <SplitSquareVertical size={14} /> 50/50
+                </button>
+              )}
+              {onUseSkip && (
+                <button 
+                  onClick={() => onUseSkip()}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-blue-200 shadow-sm"
+                >
+                  <FastForward size={14} /> Skip
+                </button>
+              )}
+              {onUseHint && (
+                <button 
+                  onClick={handleHintClick}
+                  className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 border border-indigo-200 shadow-sm"
+                >
+                  ✨ Hint
+                </button>
+              )}
+            </div>
+          )}
+          {isDoubleXPActive && (
+            <div className="bg-purple-600 text-white text-[10px] uppercase tracking-wider font-black px-2 py-1 rounded animate-pulse shadow-sm">
+              2x XP Active
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Options */}
       <div className="flex flex-col gap-4 relative z-10">
         {data.options.map((option) => {
-          if (option.id === hiddenOptionId) return null;
+          if (hiddenOptionIds.includes(option.id)) return null;
 
           const isSelected = selectedOptionId === option.id;
           const isActuallyCorrect = option.id === data.correctOptionId;
