@@ -7,6 +7,7 @@ import { useGameSounds } from "@/hooks/useGameSounds";
 import { LevelUpModal } from "@/components/juice/LevelUpModal";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { BadgeGrid } from "./widgets/BadgeGrid";
 
 export function Dashboard() {
   const { playClick } = useGameSounds();
@@ -25,7 +26,7 @@ export function Dashboard() {
     show: { 
       y: 0, 
       opacity: 1,
-      transition: { type: "spring", stiffness: 300, damping: 24 }
+      transition: { type: "spring" as const, stiffness: 300, damping: 24 }
     },
   };
 
@@ -116,6 +117,10 @@ export function Dashboard() {
         >
           <h2 className="font-heading font-bold text-xl text-slate-800 self-start mb-4">Your Hero</h2>
           <AvatarDisplay data={userData} />
+          <div className="w-full mt-8 pt-8 border-t border-slate-100">
+            <h3 className="font-heading font-bold text-lg text-slate-800 mb-6">Recent Badges</h3>
+            <BadgeGrid />
+          </div>
         </motion.div>
 
       </motion.div>

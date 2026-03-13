@@ -37,13 +37,25 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
     onAnswerSelected(correct, e);
   };
 
+  // Reset state when question data changes
+  useState(() => {
+    setSelectedOptionId(null);
+    setIsCorrect(null);
+  });
+
+  // Alternatively, the parent should use a key. But we'll add a safety reset here too.
+  if (selectedOptionId !== null && data.options.every(o => o.id !== selectedOptionId)) {
+    setSelectedOptionId(null);
+    setIsCorrect(null);
+  }
+
   // 3D Tilt Shake animation variants
   const shakeAnimation: any = {
     shake: {
       opacity: 1, x: 0,
       rotateX: [0, -10, 10, -10, 10, 0],
       rotateY: [0, 10, -10, 10, -10, 0],
-      transition: { duration: 0.5, type: "spring", stiffness: 300 },
+      transition: { duration: 0.4, ease: "easeInOut" },
     },
     idle: {
       opacity: 1, x: 0,
@@ -113,22 +125,24 @@ export function QuestionCard({ data, onAnswerSelected }: QuestionCardProps) {
         })}
       </div>
 
-      {/* Explanation Box (Shows only on wrong answer) */}
+      {/* Explanation Box (Redesigned as a subtle comment box) */}
       <AnimatePresence>
         {isCorrect === false && (
           <motion.div
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: "auto", marginTop: 24 }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            className="rounded-xl bg-rose-50 border border-rose-200 p-4 relative z-10 shadow-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="mt-6 p-5 rounded-2xl bg-slate-50 border border-slate-100 relative z-10"
           >
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <XCircle className="text-rose-500" size={20} />
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                <XCircle className="text-rose-500" size={16} />
               </div>
-              <div>
-                <h4 className="text-rose-700 font-bold mb-1 tracking-wide text-sm">INCORRECT</h4>
-                <p className="text-rose-900/80 text-sm leading-relaxed font-medium">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-widest text-rose-500 mb-1">
+                  Incorrect
+                </span>
+                <p className="text-slate-600 text-sm leading-relaxed">
                   {data.explanation}
                 </p>
               </div>
