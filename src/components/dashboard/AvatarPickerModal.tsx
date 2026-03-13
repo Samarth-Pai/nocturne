@@ -12,7 +12,7 @@ interface Avatar {
 
 const AVATARS: Avatar[] = [
   { id: "default", name: "Default", url: "/avatar.png" },
-  { id: "eren", name: "Eren Yeager", url: "/avatars/eren.png" },
+  { id: "eren", name: "Eren Yaeger", url: "/avatars/eren.png" },
   { id: "mikasa", name: "Mikasa Ackerman", url: "/avatars/mikasa.png" },
   { id: "armin", name: "Armin Arlert", url: "/avatars/armin.png" },
 ];
