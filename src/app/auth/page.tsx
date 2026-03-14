@@ -58,11 +58,11 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="font-heading text-3xl font-black text-slate-800">
+      <div className="glass-panel w-full max-w-md p-8">
+        <h1 className="cyber-text-subtle text-2xl font-black">
           {mode === "login" ? "Sign In" : "Create Account"}
         </h1>
-        <p className="mt-2 text-sm text-slate-500">Use JWT auth backed by your users collection.</p>
+        <p className="mt-2 text-sm text-slate-400">Welcome to Nocturne — authenticate to continue.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           {mode === "register" && (
@@ -71,7 +71,7 @@ export default function AuthPage() {
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-primary-sky"
+              className="w-full rounded-xl border border-purple-500/30 bg-slate-800/60 p-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors"
               required
             />
           )}
@@ -81,7 +81,7 @@ export default function AuthPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-primary-sky"
+            className="w-full rounded-xl border border-purple-500/30 bg-slate-800/60 p-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors"
             required
           />
 
@@ -90,16 +90,16 @@ export default function AuthPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-primary-sky"
+            className="w-full rounded-xl border border-purple-500/30 bg-slate-800/60 p-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors"
             required
           />
 
-          {error && <p className="text-sm text-rose-600">{error}</p>}
+          {error && <p className="text-sm text-rose-400">{error}</p>}
 
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white disabled:opacity-60"
+            className="w-full rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink py-3 text-sm font-bold text-white shadow-lg shadow-accent-purple/30 hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             {pending ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
           </button>
@@ -108,7 +108,7 @@ export default function AuthPage() {
         <button
           type="button"
           onClick={() => setMode(mode === "login" ? "register" : "login")}
-          className="mt-4 text-sm font-semibold text-primary-sky"
+          className="mt-4 text-sm font-semibold text-primary-sky hover:text-accent-purple transition-colors"
         >
           {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
         </button>
