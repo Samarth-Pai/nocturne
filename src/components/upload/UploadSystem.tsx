@@ -82,11 +82,11 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+    <div className="glass-panel w-full max-w-3xl mx-auto p-8 relative overflow-hidden">
       
       <div className="text-center mb-8 relative z-10">
-        <h2 className="font-heading font-black text-3xl text-slate-800 mb-2">Upload Study Material</h2>
-        <p className="text-slate-500 font-medium">Feed your Hero knowledge. We'll generate a custom quiz!</p>
+        <h2 className="cyber-text-subtle text-2xl text-white mb-2">UPLOAD STUDY MATERIAL</h2>
+        <p className="text-slate-400 font-medium">Feed your Hero knowledge. We&apos;ll generate a custom quiz!</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -102,10 +102,10 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
             <div
               className={`relative flex flex-col items-center justify-center w-full min-h-[200px] border-2 border-dashed rounded-2xl p-6 transition-all ${
                 dragActive 
-                  ? "border-primary-sky bg-primary-sky/5 scale-[1.02]" 
+                  ? "border-primary-sky bg-primary-sky/10 scale-[1.02] shadow-[0_0_20px_rgba(56,189,248,0.2)]" 
                   : file 
-                    ? "border-primary-teal bg-primary-teal/5" 
-                    : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400"
+                    ? "border-primary-teal bg-primary-teal/10 shadow-[0_0_15px_rgba(45,212,191,0.15)]" 
+                    : "border-slate-600 bg-slate-800/40 hover:bg-slate-800/60 hover:border-slate-500"
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -121,25 +121,25 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
               
               {file ? (
                 <div className="flex flex-col items-center text-primary-teal font-medium">
-                  <FileText size={48} className="mb-4" />
-                  <p className="text-lg">{file.name}</p>
-                  <p className="text-sm opacity-70 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <FileText size={48} className="mb-4 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)]" />
+                  <p className="text-lg text-slate-100">{file.name}</p>
+                  <p className="text-sm text-slate-400 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               ) : (
-                <div className="flex flex-col items-center text-slate-500">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                    <Upload size={28} className="text-primary-sky" />
+                <div className="flex flex-col items-center text-slate-400">
+                  <div className="w-16 h-16 bg-slate-700/80 rounded-full flex items-center justify-center shadow-sm mb-4 border border-slate-600">
+                    <Upload size={28} className="text-primary-sky drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]" />
                   </div>
-                  <p className="font-semibold text-lg text-slate-700">Click or drag file to this area</p>
-                  <p className="text-sm mt-1">Supports PDF, PPTX, TXT</p>
+                  <p className="font-semibold text-lg text-slate-200">Click or drag file to this area</p>
+                  <p className="text-sm mt-1 text-slate-500">Supports PDF, PPTX, TXT</p>
                 </div>
               )}
             </div>
 
             <div className="flex items-center gap-4 w-full">
-              <div className="h-px bg-slate-200 flex-1" />
-              <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">OR</span>
-              <div className="h-px bg-slate-200 flex-1" />
+              <div className="h-px bg-slate-700 flex-1" />
+              <span className="text-sm font-bold text-slate-500 uppercase tracking-widest">OR</span>
+              <div className="h-px bg-slate-700 flex-1" />
             </div>
 
             {/* Text Input */}
@@ -148,32 +148,32 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Subject Name (e.g. Data Structures)"
-                className="w-full mb-3 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-sky/50 outline-none transition-all text-slate-700 font-medium placeholder:text-slate-400"
+                className="w-full mb-3 p-3 rounded-xl border border-purple-500/30 bg-slate-800/60 text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors font-medium"
               />
               <input
                 value={subjectSlug}
                 onChange={(e) => setSubjectSlug(e.target.value)}
                 placeholder="Subject Slug (optional, e.g. data-structures)"
-                className="w-full mb-3 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-sky/50 outline-none transition-all text-slate-700 font-medium placeholder:text-slate-400"
+                className="w-full mb-3 p-3 rounded-xl border border-purple-500/30 bg-slate-800/60 text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors font-medium"
               />
               <textarea
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Paste your notes or text here..."
-                className="w-full h-32 p-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary-sky/50 outline-none transition-all resize-none text-slate-700 font-medium placeholder:text-slate-400"
+                className="w-full h-32 p-4 rounded-xl border border-purple-500/30 bg-slate-800/60 text-slate-100 placeholder-slate-500 outline-none focus:border-primary-sky focus:ring-1 focus:ring-primary-sky/40 transition-colors resize-none font-medium"
               />
             </div>
 
             <button
               onClick={handleUpload}
               disabled={!file && !textInput}
-              className="w-full py-4 rounded-xl font-bold text-white text-lg bg-gradient-to-r from-primary-sky to-primary-teal shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 active:translate-y-0 disabled:hover:translate-y-0"
+              className="w-full py-4 rounded-xl font-bold text-white text-lg bg-gradient-to-r from-primary-sky to-primary-teal shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 active:translate-y-0 disabled:hover:translate-y-0"
             >
               Generate Quiz
             </button>
 
             {error && (
-              <p className="text-sm text-rose-600 text-center">{error}</p>
+              <p className="text-sm text-rose-400 text-center">{error}</p>
             )}
           </motion.div>
         )}
@@ -185,10 +185,10 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center py-12 relative z-10"
           >
-            <Loader2 size={64} className="text-primary-sky animate-spin mb-6" />
-            <h3 className="font-heading font-bold text-2xl text-slate-800">Processing Material...</h3>
-            <p className="text-slate-500 font-medium mt-2 text-center max-w-sm">
-              LevelUp AI is reading your notes and generating the perfect challenge for your Avatar.
+            <Loader2 size={64} className="text-primary-sky animate-spin mb-6 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+            <h3 className="font-heading font-bold text-2xl text-white">Processing Material...</h3>
+            <p className="text-slate-400 font-medium mt-2 text-center max-w-sm">
+              AI is reading your notes and generating the perfect challenge for your Avatar.
             </p>
           </motion.div>
         )}
@@ -205,17 +205,17 @@ export function UploadSystem({ onUploaded }: UploadSystemProps) {
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <CheckCircle size={80} className="text-primary-teal mb-6" />
+              <CheckCircle size={80} className="text-primary-teal mb-6 drop-shadow-[0_0_15px_rgba(45,212,191,0.5)]" />
             </motion.div>
-            <h3 className="font-heading font-bold text-2xl text-slate-800">Quiz Ready!</h3>
-            <p className="text-slate-500 font-medium mt-2">Questions saved to database for this subject.</p>
+            <h3 className="font-heading font-bold text-2xl text-white">Quiz Ready!</h3>
+            <p className="text-slate-400 font-medium mt-2">Questions saved to database for this subject.</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Decorative background blobs */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary-sky/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-teal/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple/5 rounded-full blur-3xl" />
     </div>
   );
 }

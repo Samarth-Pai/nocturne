@@ -271,17 +271,17 @@ export function DuelArena() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-3xl mx-auto rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h2 className="font-heading text-2xl font-bold text-slate-800">Loading Duel Arena...</h2>
+      <div className="glass-panel w-full max-w-3xl mx-auto p-8 text-center">
+        <h2 className="cyber-text-subtle text-2xl font-bold text-white">Loading Duel Arena...</h2>
       </div>
     );
   }
 
   if (error && stage === "lobby") {
     return (
-      <div className="w-full max-w-3xl mx-auto rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center shadow-sm">
-        <h2 className="font-heading text-2xl font-bold text-rose-700">Duel unavailable</h2>
-        <p className="mt-2 text-rose-600">{error}</p>
+      <div className="glass-panel w-full max-w-3xl mx-auto p-8 text-center border-rose-500/30">
+        <h2 className="cyber-text-subtle text-2xl font-bold text-rose-400">Duel unavailable</h2>
+        <p className="mt-2 text-rose-300">{error}</p>
       </div>
     );
   }
@@ -297,22 +297,22 @@ export function DuelArena() {
       )}
 
       {stage === "lobby" && (
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-          <h1 className="font-heading text-4xl font-black text-slate-800">Duel Rooms</h1>
-          <p className="mt-2 text-slate-500">Create a room, then a second player clicks Start Duel to match and begin.</p>
-          {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
-          <div className="mt-6 flex items-center justify-center gap-4">
+        <div className="glass-panel p-8 text-center">
+          <h1 className="cyber-text text-3xl md:text-4xl mb-2">DUEL ROOMS</h1>
+          <p className="mt-2 text-slate-400">Create a room, then a second player clicks Start Duel to match and begin.</p>
+          {error && <p className="mt-3 text-sm text-rose-400">{error}</p>}
+          <div className="mt-8 flex items-center justify-center gap-4">
             <button
               type="button"
               onClick={createRoom}
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white"
+              className="rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink px-6 py-3 text-sm font-bold text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] hover:opacity-90 transition-opacity"
             >
               Create Room
             </button>
             <button
               type="button"
               onClick={startDuel}
-              className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700"
+              className="rounded-xl border border-primary-sky/50 bg-primary-sky/10 px-6 py-3 text-sm font-bold text-primary-sky hover:bg-primary-sky hover:text-slate-900 shadow-[0_0_10px_rgba(56,189,248,0.2)] hover:shadow-[0_0_20px_rgba(56,189,248,0.5)] transition-all"
             >
               Start Duel
             </button>
@@ -321,14 +321,17 @@ export function DuelArena() {
       )}
 
       {stage === "waiting" && (
-        <div className="rounded-3xl border border-primary-sky/30 bg-primary-sky/5 p-8 shadow-sm text-center">
-          <h2 className="font-heading text-3xl font-black text-slate-800">Room Created</h2>
-          <p className="mt-2 text-slate-600">Room ID: {duelId}</p>
-          <p className="mt-1 text-slate-500">Waiting for second player to click Start Duel...</p>
+        <div className="glass-panel p-8 text-center border-primary-sky/30">
+          <h2 className="cyber-text-subtle text-2xl font-black text-primary-sky">ROOM CREATED</h2>
+          <p className="mt-3 text-slate-300 font-mono text-sm">Room ID: <span className="text-white font-bold">{duelId}</span></p>
+          <p className="mt-2 text-slate-400">Waiting for second player to click Start Duel...</p>
+          <div className="mt-4 flex justify-center">
+            <span className="inline-block w-2 h-2 bg-primary-sky rounded-full animate-ping" />
+          </div>
           <button
             type="button"
             onClick={resetState}
-            className="mt-5 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
+            className="mt-5 rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
           >
             Cancel
           </button>
@@ -336,9 +339,14 @@ export function DuelArena() {
       )}
 
       {stage === "awaiting-result" && (
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm text-center">
-          <h2 className="font-heading text-3xl font-black text-slate-800">Waiting for Opponent</h2>
-          <p className="mt-2 text-slate-500">You finished. Final result will appear when the opponent completes the duel.</p>
+        <div className="glass-panel p-8 text-center">
+          <h2 className="cyber-text-subtle text-2xl font-black text-accent-orange">WAITING FOR OPPONENT</h2>
+          <p className="mt-2 text-slate-400">You finished. Final result will appear when the opponent completes the duel.</p>
+          <div className="mt-4 flex justify-center gap-2">
+            {[0,1,2].map(i => (
+              <span key={i} className="inline-block w-2 h-2 bg-accent-orange rounded-full animate-ping" style={{ animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -357,34 +365,38 @@ export function DuelArena() {
             key="duel-result"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
+            className="glass-panel p-8"
           >
-            <h2 className="font-heading text-3xl font-black text-slate-800">Duel Result</h2>
-            <p className="mt-2 text-slate-600">
+            <h2 className="cyber-text text-2xl md:text-3xl mb-2">
+              {result?.winnerId
+                ? result.winnerId === authUser?.id ? "VICTORY" : "DEFEATED"
+                : "DRAW"}
+            </h2>
+            <p className="text-slate-300 mt-2">
               {result?.winnerId
                 ? result.winnerId === authUser?.id
-                  ? `You won! +${result.bountyXpAwarded} bounty XP`
-                  : "You lost this duel."
-                : "This duel ended in a draw."}
+                  ? <span className="text-yellow-400 font-bold">+{result.bountyXpAwarded} bounty XP earned!</span>
+                  : "Better luck next time."
+                : "Perfectly matched opponents."}
             </p>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                <p className="text-xs uppercase font-bold text-slate-500">You</p>
-                <p className="text-2xl font-black text-slate-800 mt-1">{myResult?.score ?? score}</p>
-                <p className="text-sm text-slate-500">Score</p>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-slate-800/60 border border-primary-sky/30 p-4 text-center">
+                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider mb-1">You</p>
+                <p className="text-3xl font-black text-primary-sky drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">{myResult?.score ?? score}</p>
+                <p className="text-xs text-slate-500 mt-1">XP</p>
               </div>
-              <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200">
-                <p className="text-xs uppercase font-bold text-slate-500">Opponent</p>
-                <p className="text-2xl font-black text-slate-800 mt-1">{opponentResult?.score ?? 0}</p>
-                <p className="text-sm text-slate-500">Score</p>
+              <div className="rounded-2xl bg-slate-800/60 border border-accent-pink/30 p-4 text-center">
+                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider mb-1">Opponent</p>
+                <p className="text-3xl font-black text-accent-pink drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">{opponentResult?.score ?? 0}</p>
+                <p className="text-xs text-slate-500 mt-1">XP</p>
               </div>
             </div>
 
             <button
               type="button"
               onClick={resetState}
-              className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white"
+              className="mt-6 rounded-xl border border-accent-purple/50 bg-accent-purple/10 px-6 py-3 text-sm font-bold text-white hover:bg-accent-purple/20 hover:shadow-[0_0_15px_rgba(139,92,246,0.4)] transition-all"
             >
               Back to Duel Lobby
             </button>
