@@ -3,7 +3,7 @@
 A cyberpunk-themed gamified educational platform built with Next.js — where learning feels like leveling up.
 
 ## Demo
-
+![Demo Compressed](public/demo_compress.mp4)
 ![Demo](public/demo.mp4)
 
 ---
