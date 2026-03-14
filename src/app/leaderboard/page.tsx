@@ -7,10 +7,10 @@ export default function LeaderboardPage() {
       {/* Header section */}
       <div className="w-full flex justify-between items-center mb-8 relative z-10">
         <div>
-          <h1 className="font-heading font-black text-3xl md:text-4xl text-slate-800 tracking-tight">
-            Global <span className="text-primary-sky">Leaderboard</span>
+          <h1 className="cyber-text-subtle text-3xl md:text-4xl text-white tracking-tight drop-shadow-md">
+            GLOBAL <span className="text-primary-sky drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">LEADERBOARD</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-1">See how you stack up against the top learners.</p>
+          <p className="text-slate-300 font-medium mt-1">See how you stack up against the top learners.</p>
         </div>
       </div>
 

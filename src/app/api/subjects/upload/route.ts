@@ -247,7 +247,7 @@ async function generateQuestionsWithGemini(
   text: string,
 ): Promise<ReturnType<typeof normalizeGeminiQuestions>> {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+  const model = process.env.GEMINI_MODEL ?? "gemini-3-pro-preview";
 
   if (!apiKey) {
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is not configured.");

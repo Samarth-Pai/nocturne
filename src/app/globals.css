@@ -6,6 +6,7 @@
   --color-primary-coral: #FF6B6B;
   
   --color-accent-purple: #8B5CF6;
+  --color-accent-pink: #EC4899;
   --color-accent-orange: #F59E0B;
 
   --color-neutral-offwhite: #F8FAFC;
@@ -13,11 +14,12 @@
 
   --font-heading: var(--font-poppins);
   --font-body: var(--font-inter);
+  --font-cyberpunk: var(--font-orbitron);
 }
 
 :root {
-  --background: #F8FAFC;
-  --foreground: #1e293b; /* slate-800 for good contrast */
+  --background: rgba(15, 23, 42, 0);
+  --foreground: #f8fafc; /* slate-50 for dark theme contrast */
 }
 
 body {
@@ -25,6 +27,115 @@ body {
   color: var(--foreground);
   font-family: var(--font-body), sans-serif;
   overflow-x: hidden;
+}
+
+/* Cyberpunk Background */
+.cyberpunk-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background-image: 
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)),
+    url('/cyberpunk_samurai_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  filter: blur(12px);
+  transform: scale(1.1); /* Prevent blur from shrinking edges */
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2), inset 0 0 20px rgba(236, 72, 153, 0.05);
+  border-radius: 1.5rem;
+}
+
+/* Cyberpunk Text Glow */
+.cyber-text {
+  font-family: var(--font-cyberpunk), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: #fff;
+  text-shadow: 
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px var(--color-accent-purple),
+    0 0 40px var(--color-accent-purple),
+    0 0 80px var(--color-accent-pink);
+}
+
+.cyber-text-subtle {
+  font-family: var(--font-cyberpunk), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #e2e8f0;
+  text-shadow: 0 0 10px var(--color-accent-purple);
+}
+
+/* Pac-Man Loader Animation */
+.pacman-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 120px;
+  height: 60px;
+  margin: 0 auto;
+}
+
+.pacman {
+  width: 0px;
+  height: 0px;
+  border-right: 30px solid transparent;
+  border-top: 30px solid var(--color-accent-purple);
+  border-left: 30px solid var(--color-accent-purple);
+  border-bottom: 30px solid var(--color-accent-purple);
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  animation: chomp 0.4s ease-in-out infinite alternate;
+  position: absolute;
+  left: 0;
+  z-index: 2;
+  box-shadow: 0 0 15px var(--color-accent-purple);
+}
+
+.pacman-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-accent-pink);
+  border-radius: 50%;
+  position: absolute;
+  top: 25px;
+  right: 0;
+  box-shadow: 0 0 10px var(--color-accent-pink);
+  animation: move-dots 1s linear infinite;
+}
+
+.pacman-dot:nth-child(2) {
+  animation-delay: 0.33s;
+}
+
+.pacman-dot:nth-child(3) {
+  animation-delay: 0.66s;
+}
+
+@keyframes chomp {
+  0% { border-right: 30px solid transparent; }
+  100% { border-right: 30px solid var(--color-accent-purple); }
+}
+
+@keyframes move-dots {
+  0% { right: -20px; opacity: 1; }
+  100% { right: 80px; opacity: 0; }
 }
 
 /* Mesh Gradient Animation */

@@ -117,16 +117,16 @@ export function Dashboard() {
       {/* Header section */}
       <div className="w-full flex justify-between items-center mb-8">
         <div>
-          <h1 className="font-heading font-black text-3xl md:text-4xl text-slate-800 tracking-tight">
-            Welcome back, <span className="text-primary-sky">{userData.name || "Hero"}!</span>
+          <h1 className="font-heading font-black text-3xl md:text-4xl cyber-text-subtle tracking-tight text-white">
+            Welcome back, <span className="text-primary-teal drop-shadow-[0_0_8px_rgba(45,212,191,0.5)]">{userData.name || "Hero"}!</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Ready to level up your knowledge today?</p>
+          <p className="text-slate-300 font-medium mt-1">Ready to level up your knowledge today?</p>
         </div>
         
         {/* Hidden demo button for level up effect */}
         <button 
           onClick={triggerLevelUp}
-          className="p-3 bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md text-yellow-500 transition-all hover:bg-yellow-50"
+          className="p-3 bg-slate-900/50 backdrop-blur-md border border-accent-purple/50 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.2)] text-accent-orange transition-all hover:bg-accent-purple/20 hover:shadow-[0_0_15px_rgba(139,92,246,0.6)]"
           title="Demo Level Up"
         >
            <Sparkles size={20} />
@@ -164,7 +164,7 @@ export function Dashboard() {
           })}
 
           {weakSubjects.length === 0 && (
-            <motion.div variants={itemVariants} className="w-full md:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500">
+            <motion.div variants={itemVariants} className="w-full md:col-span-2 glass-panel p-6 text-center text-slate-300">
               No weak or unattempted subjects right now.
             </motion.div>
           )}
@@ -173,26 +173,26 @@ export function Dashboard() {
         {/* Right Side: Central Avatar Display */}
         <motion.div 
           variants={itemVariants}
-          className="lg:col-span-5 flex flex-col items-center justify-start bg-white rounded-3xl p-6 shadow-sm border border-slate-100 order-1 lg:order-2"
+          className="lg:col-span-5 flex flex-col items-center justify-start glass-panel p-6 order-1 lg:order-2"
         >
-          <h2 className="font-heading font-bold text-xl text-slate-800 self-start mb-4">Your Hero</h2>
+          <h2 className="cyber-text-subtle text-xl text-accent-purple self-start mb-4">YOUR HERO</h2>
           <AvatarDisplay data={userData} />
-          <div className="w-full mt-8 pt-8 border-t border-slate-100">
-            <h3 className="font-heading font-bold text-lg text-slate-800 mb-6">Recent Badges</h3>
+          <div className="w-full mt-8 pt-8 border-t border-slate-700/50">
+            <h3 className="cyber-text-subtle text-lg text-slate-200 mb-6 drop-shadow-md">RECENT BADGES</h3>
             <BadgeGrid />
           </div>
 
-          <div className="w-full mt-8 pt-8 border-t border-slate-100">
-            <h3 className="font-heading font-bold text-lg text-slate-800 mb-4">Weakest Subjects</h3>
+          <div className="w-full mt-8 pt-8 border-t border-slate-700/50">
+            <h3 className="cyber-text-subtle text-lg text-slate-200 mb-4 drop-shadow-md">WEAKEST SUBJECTS</h3>
             <div className="space-y-3">
               {weakSubjects.length === 0 && (
-                <p className="text-sm text-slate-500">No weak subjects yet. Play more quizzes to unlock analytics.</p>
+                <p className="text-sm text-slate-400">No weak subjects yet. Play more quizzes to unlock analytics.</p>
               )}
 
               {weakSubjects.map((subject) => (
-                <div key={subject.subjectSlug} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left">
-                  <p className="text-sm font-bold text-slate-800">{subject.subject}</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                <div key={subject.subjectSlug} className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3 text-left hover:bg-slate-800/60 transition-colors">
+                  <p className="text-sm font-bold text-primary-sky drop-shadow-[0_0_5px_rgba(56,189,248,0.3)]">{subject.subject}</p>
+                  <p className="text-xs text-slate-300 mt-1">
                     {subject.reason === "not-attempted"
                       ? "Not attempted yet"
                       : `Accuracy: ${subject.accuracy ?? 0}% across ${subject.attemptedCount} attempt(s)`}

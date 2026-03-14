@@ -50,13 +50,22 @@ function slugify(value: string): string {
 }
 
 function sanitizeFilename(value: string): string {
-  const cleaned = value
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  // Split extension from basename to avoid mangling the .png suffix
+  const lastDot = value.lastIndexOf(".");
+  const hasDot = lastDot > 0 && lastDot < value.length - 1;
+  const stem = hasDot ? value.slice(0, lastDot) : value;
+  const ext = hasDot ? value.slice(lastDot) : "";
 
-  return cleaned || `image-${Date.now()}.png`;
+  const cleanedStem = stem
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "") || `image-${Date.now()}`;
+
+  // Force PNG extension — disallow .svg or anything else
+  const safeExt = ext.toLowerCase() === ".svg" || !ext ? ".png" : ext.toLowerCase();
+
+  return `${cleanedStem}${safeExt}`;
 }
 
 function stripMarkdown(value: string): string {
@@ -101,37 +110,27 @@ function normalizeTopicExplanation(topic: string, explanation: string): string {
   return `${intro}\n\nKey points:\n${points.join("\n")}`;
 }
 
+// Minimal valid 1×1 white PNG (base64) used as a fallback placeholder
+const PLACEHOLDER_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 async function createTopicPlaceholderImage(
   topic: string,
   folderAbsoluteDir: string,
   folderPublicPath: string,
   index: number,
 ): Promise<{ imageFilename: string; imagePath: string }> {
-  const localFilename = `${index + 1}-${sanitizeFilename(topic)}.svg`;
+  const safeStem = topic
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "") || `topic-${index + 1}`;
+
+  const localFilename = `${index + 1}-${safeStem}-placeholder.png`;
   const absoluteTargetPath = path.join(folderAbsoluteDir, localFilename);
   const relativeImagePath = `${folderPublicPath}/${localFilename}`;
 
-  const escapedTopic = topic
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .slice(0, 90);
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#dbeafe" />
-      <stop offset="100%" stop-color="#ccfbf1" />
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="800" fill="url(#g)" />
-  <rect x="80" y="80" width="1040" height="640" rx="24" fill="#ffffff" fill-opacity="0.92" />
-  <text x="120" y="220" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#0f172a">Topic Illustration</text>
-  <text x="120" y="300" font-family="Arial, sans-serif" font-size="36" fill="#1e293b">${escapedTopic}</text>
-  <text x="120" y="380" font-family="Arial, sans-serif" font-size="24" fill="#334155">Image generation fallback placeholder</text>
-</svg>`;
-
-  await writeFile(absoluteTargetPath, Buffer.from(svg, "utf8"));
+  await writeFile(absoluteTargetPath, Buffer.from(PLACEHOLDER_PNG_BASE64, "base64"));
 
   return {
     imageFilename: localFilename,
@@ -213,7 +212,7 @@ async function generateStoryQuizWithGemini(
   topics: StoryTopicPayload[],
 ): Promise<StoryQuizQuestion[]> {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+  const model = process.env.GEMINI_MODEL ?? "gemini-3-pro-preview";
 
   if (!apiKey) {
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is not configured.");

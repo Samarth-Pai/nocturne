@@ -8,9 +8,9 @@ interface QuizIntroProps {
 }
 
 const MESSAGES = [
-  "Initializing knowledge system...",
-  "Loading question matrix...",
-  "Preparing challenge..."
+  "INITIALIZING KNOWLEDGE MATRIX...",
+  "DECRYPTING QUESTION DATA...",
+  "PREPARING NEURAL LINK..."
 ];
 
 export function QuizIntro({ onComplete }: QuizIntroProps) {
@@ -32,19 +32,24 @@ export function QuizIntro({ onComplete }: QuizIntroProps) {
   }, [currentIndex, onComplete]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-3xl border border-slate-200 bg-white p-12 shadow-sm relative overflow-hidden flex items-center justify-center min-h-[300px]">
+    <div className="w-full max-w-2xl mx-auto glass-panel p-12 relative overflow-hidden flex flex-col items-center justify-center min-h-[300px] z-10">
       <AnimatePresence mode="wait">
         {currentIndex < MESSAGES.length && (
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.4 }}
+            className="text-center w-full"
           >
-            <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-primary-sky animate-spin mx-auto mb-6" />
-            <h2 className="text-xl md:text-2xl font-heading font-black text-slate-700 tracking-tight">
+            <div className="pacman-container mb-8">
+              <div className="pacman"></div>
+              <div className="pacman-dot"></div>
+              <div className="pacman-dot"></div>
+              <div className="pacman-dot"></div>
+            </div>
+            <h2 className="cyber-text text-lg md:text-2xl tracking-widest text-shadow-md">
               {MESSAGES[currentIndex]}
             </h2>
           </motion.div>

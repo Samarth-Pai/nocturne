@@ -253,19 +253,22 @@ export function QuizArena() {
         newLevel={levelUpData.level} 
         onClose={() => setLevelUpData(prev => ({ ...prev, show: false }))} 
       />
-      <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 px-2">
-        <div className="flex justify-between items-center">
-          <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
-            Question {Math.min(currentIndex + 1, questions.length)} of {questions.length}
+      <div className="w-full max-w-2xl mx-auto flex flex-col gap-4 px-2">
+        <div className="text-center mb-2 animate-flicker">
+          <h1 className="cyber-text text-xl md:text-3xl">K A M U I&nbsp;&nbsp;L E A R N I N G&nbsp;&nbsp;S Y S T E M</h1>
+        </div>
+        <div className="flex justify-between items-center text-slate-200">
+          <p className="cyber-text-subtle text-xs md:text-sm font-bold tracking-widest">
+            QUESTION {Math.min(currentIndex + 1, questions.length)} OF {questions.length}
           </p>
-          <p id="xp-score-indicator" className="text-sm font-bold text-primary-sky">{score} XP</p>
+          <p id="xp-score-indicator" className="cyber-text-subtle text-xs md:text-sm font-bold text-accent-pink">{score} XP</p>
         </div>
         <div 
           id="quiz-progress-bar"
-          className={`w-full h-2 bg-slate-100 rounded-full overflow-hidden transition-all duration-300 ${isGlow ? 'shadow-[0_0_15px_rgba(56,189,248,0.8)]' : ''}`}
+          className={`w-full h-2 bg-slate-800/80 rounded-full overflow-hidden transition-all duration-300 ${isGlow ? 'shadow-[0_0_20px_rgba(236,72,153,0.8)]' : 'shadow-[0_0_5px_rgba(139,92,246,0.3)]'}`}
         >
           <div 
-            className="h-full bg-primary-sky transition-all duration-500" 
+            className="h-full bg-gradient-to-r from-accent-purple to-accent-pink transition-all duration-500" 
             style={{ width: `${(Math.min(currentIndex, questions.length) / Math.max(1, questions.length)) * 100}%` }} 
           />
         </div>
@@ -296,28 +299,28 @@ export function QuizArena() {
             key="practice-result"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm text-center"
+            className="glass-panel p-10 text-center relative z-10"
           >
-            <h2 className="font-heading text-4xl font-black text-slate-800">Practice Complete</h2>
-            <p className="mt-3 text-slate-600 text-lg">Score: {score}</p>
-            <p className="mt-1 text-slate-500">Correct Answers: {correctAnswers}/{questions.length}</p>
+            <h2 className="cyber-text text-3xl md:text-5xl mb-4">SYSTEM CALIBRATED</h2>
+            <p className="mt-4 cyber-text-subtle text-lg text-accent-pink">Final Score: {score} XP</p>
+            <p className="mt-2 cyber-text-subtle text-sm text-slate-300">Accuracy: {correctAnswers}/{questions.length}</p>
             {streakCount !== null && (
-              <p className="mt-2 text-primary-teal font-bold">Daily Streak: {streakCount} day(s)</p>
+              <p className="mt-4 cyber-text-subtle text-sm text-accent-purple font-bold">Daily Streak: {streakCount}</p>
             )}
 
-            <div className="mt-6 flex justify-center gap-3">
+            <div className="mt-8 flex justify-center gap-4">
               <button
                 type="button"
                 onClick={resetQuiz}
-                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700"
+                className="rounded-xl border border-accent-purple bg-slate-900/50 px-6 py-3 text-sm font-bold text-white hover:bg-accent-purple/20 hover:shadow-[0_0_15px_rgba(139,92,246,0.6)] transition-all"
               >
-                Play Again
+                REBOOT SEQUENCE
               </button>
               <Link
                 href="/profile"
-                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white"
+                className="rounded-xl bg-accent-pink px-6 py-3 text-sm font-bold text-slate-900 shadow-[0_0_15px_rgba(236,72,153,0.6)] hover:bg-white hover:shadow-[0_0_25px_rgba(255,255,255,0.8)] transition-all"
               >
-                View Quiz History
+                ACCESS ARCHIVES
               </Link>
             </div>
           </motion.div>
