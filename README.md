@@ -4,9 +4,7 @@ A cyberpunk-themed gamified educational platform built with Next.js — where le
 
 ## Demo
 
-<video src="public/demo.mp4" controls width="100%">
-  <a href="public/demo.mp4">Watch the demo</a>
-</video>
+![Demo](public/demo.mp4)
 
 ---
 
